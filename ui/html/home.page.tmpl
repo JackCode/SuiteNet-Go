@@ -13,7 +13,7 @@
         </tr>
         {{range .MaintenanceRequests}}
         <tr>
-            <td><a href='/maintenanceRequest?id={{.ID}}'>{{.Title}}</a></td>
+            <td><a href='/maintenanceRequest/{{.ID}}'>{{.Title}}</a></td>
             <td>{{humanDate .Created}}</td>
             <td>{{.Status}}</td>
         </tr>

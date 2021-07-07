@@ -42,7 +42,7 @@ func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Re
 	})
 }
 
-func (app *application) maintenanceRequestForm(w http.ResponseWriter, r *http.Request) {
+func (app *application) createMaintenanceRequestForm(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Create a new snippet..."))
 }
 
