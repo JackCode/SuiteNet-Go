@@ -16,15 +16,21 @@
         </header>
         <nav>
             <div>
-            <a href='/'>Home</a>
-            <a href="/maintenanceRequest/create">Maintenance</a>
+                {{if .AuthenticatedUser}}
+                    <a href='/'>Home</a>
+                    <a href="/maintenanceRequest/create">Maintenance</a>
+                {{end}}
             </div>
             <div>
+                {{if .AuthenticatedUser}}
+                    <form action='/user/logout' method='POST'>
+                        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+                        <button>Logout</button>
+                    </form>
+                {{else}}
                 <a href='/user/signup'>Signup</a>
                 <a href='/user/login'>Login</a>
-                <form action='/user/logout' method='POST'>
-                    <button>Logout</button>
-                </form>
+                {{end}}              
             </div>
         </nav>
         <section>
