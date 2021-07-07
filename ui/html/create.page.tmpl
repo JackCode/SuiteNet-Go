@@ -1,0 +1,41 @@
+{{template "base" .}}
+
+{{define "title"}}Create a New Maintenance Request{{end}}
+
+{{define "body"}}
+<form action='/maintenanceRequest/create' method='POST'>
+    {{with .Form}}
+    <div>
+        <h2>Create New Work Order</h2>
+    </div>
+    <div>
+        <label>Title:</label>
+        {{with .Errors.Get "title"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='text' name='title' value='{{.Get "title"}}'>
+    </div>
+    <div>
+        <label>Description:</label>
+        {{with .Errors.Get "description"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <textarea name='description'>{{.Get "description"}}</textarea>
+    </div>
+    <div>
+        <label>Status:</label>
+        {{with .Errors.Get "status"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        {{$stat := or (.Get "status") "OPEN"}}
+        <input type='radio' name='status' value='OPEN' {{if (eq $stat "OPEN")}}checked{{end}}> OPEN
+        <input type='radio' name='status' value='PENDING' {{if (eq $stat "PENDING")}}checked{{end}}> PENDING
+        <input type='radio' name='status' value='IN PROGRESS' {{if (eq $stat "IN PROGRESS")}}checked{{end}}> IN PROGRESS
+        <input type='radio' name='status' value='COMPLETE' {{if (eq $stat "COMPLETE")}}checked{{end}}> COMPLETE
+    </div>
+    <div>
+        <input type='submit' value='Create Maintenance Request'>
+    </div>
+    {{end}}
+</form>
+{{end}}

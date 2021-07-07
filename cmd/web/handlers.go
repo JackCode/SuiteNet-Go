@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jackcode/suitenet/pkg/forms"
 	"github.com/jackcode/suitenet/pkg/models"
 )
 
@@ -43,15 +44,29 @@ func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Re
 }
 
 func (app *application) createMaintenanceRequestForm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Create a new snippet..."))
+	app.render(w, r, "create.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.Request) {
-	title := "Pool - Seresco not working"
-	description := "Compressor 1 High Pressure fault"
-	status := "OPEN"
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 
-	id, err := app.maintenanceRequests.Insert(title, description, status)
+	form := forms.New(r.PostForm)
+	form.Required("title", "description", "status")
+	form.MaxLength("title", 100)
+	form.PermittedValues("status", "OPEN", "PENDING", "IN PROGRESS", "COMPLETE")
+
+	if !form.Valid() {
+		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	id, err := app.maintenanceRequests.Insert(form.Get("title"), form.Get("description"), form.Get("status"))
 	if err != nil {
 		app.serverError(w, err)
 		return

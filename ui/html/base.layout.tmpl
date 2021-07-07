@@ -15,7 +15,13 @@
             <h1><a href='/'>SuiteNet</a></h1>
         </header>
         <nav>
-            <a href='/'>Home</a>
+            <top><a href='/'>Home</a></top>
+            <div class="dropdown">
+                <button class="dropbtn">Maintenance</button>
+                <div class="dropdown-content">
+                  <a href="/maintenanceRequest/create">New Request</a>
+                </div>
+              </div>
         </nav>
         <section>
             {{template "body" .}}

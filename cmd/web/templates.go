@@ -5,11 +5,13 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/jackcode/suitenet/pkg/forms"
 	"github.com/jackcode/suitenet/pkg/models"
 )
 
 type templateData struct {
 	CurrentYear         int
+	Form                *forms.Form
 	MaintenanceRequest  *models.MaintenanceRequest
 	MaintenanceRequests []*models.MaintenanceRequest
 }
