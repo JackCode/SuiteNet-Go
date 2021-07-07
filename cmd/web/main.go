@@ -22,6 +22,7 @@ type application struct {
 	session             *sessions.Session
 	maintenanceRequests *mysql.MaintenanceRequestModel
 	templateCache       map[string]*template.Template
+	users               *mysql.UserModel
 }
 
 func main() {
@@ -62,6 +63,7 @@ func main() {
 		session:             session,
 		maintenanceRequests: &mysql.MaintenanceRequestModel{DB: db},
 		templateCache:       templateCache,
+		users:               &mysql.UserModel{DB: db},
 	}
 
 	tlsConfig := &tls.Config{

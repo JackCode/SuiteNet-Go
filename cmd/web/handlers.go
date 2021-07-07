@@ -75,3 +75,62 @@ func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.
 	app.session.Put(r, "flash", "Maintenance Request successfully created!")
 	http.Redirect(w, r, fmt.Sprintf("/maintenanceRequest/%d", id), http.StatusSeeOther)
 }
+
+func (app *application) signupUserForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "signup.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
+}
+
+func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
+	// Parse the form data.
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validate the form contents using the form helper we made earlier.
+	form := forms.New(r.PostForm)
+	form.Required("name", "username", "password")
+	form.MinLength("password", 10)
+	form.MinLength("name", 2)
+	form.MinLength("username", 4)
+
+	// If there are any errors, redisplay the signup form.
+	if !form.Valid() {
+		app.render(w, r, "signup.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	// Try to create a new user record in the database. If the username already exists
+	// add an error message to the form and re-display it.
+	err = app.users.Insert(form.Get("name"), form.Get("username"), form.Get("password"))
+	if err == models.ErrDuplicateUsername {
+		form.Errors.Add("username", "Username is already in use")
+		app.render(w, r, "signup.page.tmpl", &templateData{Form: form})
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Otherwise add a confirmation flash message to the session confirming that
+	// their signup worked and asking them to log in.
+	app.session.Put(r, "flash", "Signup was successful.")
+
+	// And redirect the user to the login page.
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}
+
+func (app *application) loginUserForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Display the user login form...")
+}
+
+func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Authenticate and login the user...")
+}
+
+func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Logout the user...")
+}

@@ -15,8 +15,17 @@
             <h1><a href='/'>SuiteNet</a></h1>
         </header>
         <nav>
+            <div>
             <a href='/'>Home</a>
-            <a href="/maintenanceRequest/create">New Work Order</a>
+            <a href="/maintenanceRequest/create">Maintenance</a>
+            </div>
+            <div>
+                <a href='/user/signup'>Signup</a>
+                <a href='/user/login'>Login</a>
+                <form action='/user/logout' method='POST'>
+                    <button>Logout</button>
+                </form>
+            </div>
         </nav>
         <section>
             {{with .Flash}}
