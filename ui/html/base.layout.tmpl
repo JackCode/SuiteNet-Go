@@ -15,15 +15,13 @@
             <h1><a href='/'>SuiteNet</a></h1>
         </header>
         <nav>
-            <top><a href='/'>Home</a></top>
-            <div class="dropdown">
-                <button class="dropbtn">Maintenance</button>
-                <div class="dropdown-content">
-                  <a href="/maintenanceRequest/create">New Request</a>
-                </div>
-              </div>
+            <a href='/'>Home</a>
+            <a href="/maintenanceRequest/create">New Work Order</a>
         </nav>
         <section>
+            {{with .Flash}}
+            <div class='flash '>{{.}}</div>
+            {{end}}
             {{template "body" .}}
         </section>
         {{template "footer" .}}

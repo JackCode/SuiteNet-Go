@@ -9,12 +9,13 @@ import (
 
 func (app *application) routes() http.Handler {
 	standardMiddleware := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+	dynamicMiddleware := alice.New(app.session.Enable)
 
 	mux := pat.New()
-	mux.Get("/", http.HandlerFunc(app.home))
-	mux.Get("/maintenanceRequest/create", http.HandlerFunc(app.createMaintenanceRequestForm))
-	mux.Post("/maintenanceRequest/create", http.HandlerFunc(app.createMaintenanceRequest))
-	mux.Get("/maintenanceRequest/:id", http.HandlerFunc(app.showMaintenanceRequest))
+	mux.Get("/", dynamicMiddleware.ThenFunc(app.home))
+	mux.Get("/maintenanceRequest/create", dynamicMiddleware.ThenFunc(app.createMaintenanceRequestForm))
+	mux.Post("/maintenanceRequest/create", dynamicMiddleware.ThenFunc(app.createMaintenanceRequest))
+	mux.Get("/maintenanceRequest/:id", dynamicMiddleware.ThenFunc(app.showMaintenanceRequest))
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Get("/static/", http.StripPrefix("/static", fileServer))

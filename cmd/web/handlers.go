@@ -72,5 +72,6 @@ func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.
 		return
 	}
 
+	app.session.Put(r, "flash", "Maintenance Request successfully created!")
 	http.Redirect(w, r, fmt.Sprintf("/maintenanceRequest/%d", id), http.StatusSeeOther)
 }
