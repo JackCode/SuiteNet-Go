@@ -1,0 +1,19 @@
+{{template "base" .}}
+
+{{define "title"}}Maintenance Request{{end}}
+
+{{define "body"}}
+    {{with .MaintenanceRequest}}
+    <div class='maintenanceRequest'>
+        <div class='metadata'>
+            <strong>{{.Title}}</strong>
+            <span>Status: {{.Status}}</span>
+        </div>
+        <pre><code>{{.Description}}</code></pre>
+        <div class='metadata'>
+            <time>Created: {{.Created}}</time>
+            <span>Created by: USER</span>
+        </div>
+    </div>
+    {{end}}
+{{end}}

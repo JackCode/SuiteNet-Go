@@ -3,6 +3,23 @@
 {{define "title"}}Home{{end}}
 
 {{define "body"}}
-<h2>Latest Maintenance Requests</h2>
-<p>There's nothing to see here yet!</p>
+    <h2>Incomplete Maintenance Requests</h2>
+    {{if .MaintenanceRequests}}
+     <table>
+        <tr>
+            <th>Title</th>
+            <th>Created</th>
+            <th>Status</th>
+        </tr>
+        {{range .MaintenanceRequests}}
+        <tr>
+            <td><a href='/maintenanceRequest?id={{.ID}}'>{{.Title}}</a></td>
+            <td>{{.Created}}</td>
+            <td>{{.Status}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+        <p>All maintenance requests are complete!</p>
+    {{end}}
 {{end}}

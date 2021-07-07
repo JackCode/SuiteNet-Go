@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -14,33 +15,31 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mr, err := app.maintenanceRequests.OpenAndPending()
+	mr, err := app.maintenanceRequests.OpenPendingInProgress()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	for _, request := range mr {
-		fmt.Fprintf(w, "%v\n\n", request)
+	data := &templateData{MaintenanceRequests: mr}
+
+	// Include the footer partial in the template files.
+	files := []string{
+		"./ui/html/home.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
 	}
 
-	// // Include the footer partial in the template files.
-	// files := []string{
-	// 	"./ui/html/home.page.tmpl",
-	// 	"./ui/html/base.layout.tmpl",
-	// 	"./ui/html/footer.partial.tmpl",
-	// }
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
-
-	// err = ts.Execute(w, nil)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// }
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+	}
 }
 
 func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +58,25 @@ func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	fmt.Fprintf(w, "%v", mr)
+	data := &templateData{MaintenanceRequest: mr}
+
+	files := []string{
+		"./ui/html/show.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	err = ts.Execute(w, data)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 }
 
 func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.Request) {
