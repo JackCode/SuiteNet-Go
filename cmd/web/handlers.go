@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -10,40 +9,20 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		app.notFound(w)
-		return
-	}
-
+	// Retrieve Incomplete Maintenance Requests to display on home page
 	mr, err := app.maintenanceRequests.OpenPendingInProgress()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	data := &templateData{MaintenanceRequests: mr}
-
-	// Include the footer partial in the template files.
-	files := []string{
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-	}
+	app.render(w, r, "home.page.tmpl", &templateData{
+		MaintenanceRequests: mr,
+	})
 }
 
 func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -58,34 +37,16 @@ func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	data := &templateData{MaintenanceRequest: mr}
+	app.render(w, r, "show.page.tmpl", &templateData{
+		MaintenanceRequest: mr,
+	})
+}
 
-	files := []string{
-		"./ui/html/show.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+func (app *application) maintenanceRequestForm(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Create a new snippet..."))
 }
 
 func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Header().Set("Allow", "POST")
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
-
 	title := "Pool - Seresco not working"
 	description := "Compressor 1 High Pressure fault"
 	status := "OPEN"
@@ -96,5 +57,5 @@ func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/maintenanceRequest?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/maintenanceRequest/%d", id), http.StatusSeeOther)
 }

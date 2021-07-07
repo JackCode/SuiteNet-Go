@@ -44,7 +44,7 @@ func (m *MaintenanceRequestModel) Get(id int) (*models.MaintenanceRequest, error
 
 func (m *MaintenanceRequestModel) OpenPendingInProgress() ([]*models.MaintenanceRequest, error) {
 	stmt := `SELECT id, title, description, created, status FROM maintenanceRequests
-	         WHERE status="OPEN" OR status = "IN PROGRESS" ORDER BY created DESC`
+	         WHERE status="OPEN" OR status = "IN PROGRESS" OR status = "PENDING" ORDER BY created DESC`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
