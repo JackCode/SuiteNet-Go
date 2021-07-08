@@ -6,12 +6,12 @@ import (
 	"github.com/jackcode/suitenet/pkg/models"
 )
 
-type MaintenanceRequestModel struct {
+type WorkOrderModel struct {
 	DB *sql.DB
 }
 
-func (m *MaintenanceRequestModel) Insert(title, description, status string) (int, error) {
-	stmt := `INSERT INTO maintenanceRequests (title, description, created, status)
+func (m *WorkOrderModel) Insert(title, description, status string) (int, error) {
+	stmt := `INSERT INTO workOrders (title, description, created, status)
 			 VALUES(?, ?, UTC_TIMESTAMP(), ?)`
 
 	result, err := m.DB.Exec(stmt, title, description, status)
@@ -27,11 +27,11 @@ func (m *MaintenanceRequestModel) Insert(title, description, status string) (int
 	return int(id), nil
 }
 
-func (m *MaintenanceRequestModel) Get(id int) (*models.MaintenanceRequest, error) {
-	stmt := `SELECT id, title, description, created, status FROM maintenanceRequests
+func (m *WorkOrderModel) Get(id int) (*models.WorkOrder, error) {
+	stmt := `SELECT id, title, description, created, status FROM workOrders
 	         WHERE id = ?`
 
-	mr := &models.MaintenanceRequest{}
+	mr := &models.WorkOrder{}
 	err := m.DB.QueryRow(stmt, id).Scan(&mr.ID, &mr.Title, &mr.Description, &mr.Created, &mr.Status)
 	if err == sql.ErrNoRows {
 		return nil, models.ErrNoRecord
@@ -42,8 +42,8 @@ func (m *MaintenanceRequestModel) Get(id int) (*models.MaintenanceRequest, error
 	return mr, nil
 }
 
-func (m *MaintenanceRequestModel) OpenPendingInProgress() ([]*models.MaintenanceRequest, error) {
-	stmt := `SELECT id, title, description, created, status FROM maintenanceRequests
+func (m *WorkOrderModel) OpenPendingInProgress() ([]*models.WorkOrder, error) {
+	stmt := `SELECT id, title, description, created, status FROM workOrders
 	         WHERE status="OPEN" OR status = "IN PROGRESS" OR status = "PENDING" ORDER BY created DESC`
 
 	rows, err := m.DB.Query(stmt)
@@ -53,21 +53,21 @@ func (m *MaintenanceRequestModel) OpenPendingInProgress() ([]*models.Maintenance
 
 	defer rows.Close()
 
-	maintenanceRequests := []*models.MaintenanceRequest{}
+	workOrders := []*models.WorkOrder{}
 
 	for rows.Next() {
-		mr := &models.MaintenanceRequest{}
+		mr := &models.WorkOrder{}
 
 		err = rows.Scan(&mr.ID, &mr.Title, &mr.Description, &mr.Created, &mr.Status)
 		if err != nil {
 			return nil, err
 		}
-		maintenanceRequests = append(maintenanceRequests, mr)
+		workOrders = append(workOrders, mr)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return maintenanceRequests, nil
+	return workOrders, nil
 }

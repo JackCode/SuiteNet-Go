@@ -3,17 +3,17 @@
 {{define "title"}}Home{{end}}
 
 {{define "body"}}
-    <h2>Incomplete Maintenance Requests</h2>
-    {{if .MaintenanceRequests}}
+    <h2>Incomplete Work Orders</h2>
+    {{if .WorkOrders}}
      <table>
         <tr>
             <th>Title</th>
             <th>Created</th>
             <th>Status</th>
         </tr>
-        {{range .MaintenanceRequests}}
+        {{range .WorkOrders}}
         <tr>
-            <td><a href='/maintenanceRequest/{{.ID}}'>{{.Title}}</a></td>
+            <td><a href='/engineering/workOrder/{{.ID}}'>{{.Title}}</a></td>
             <td>{{humanDate .Created}}</td>
             <td>{{.Status}}</td>
         </tr>

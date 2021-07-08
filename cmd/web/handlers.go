@@ -9,27 +9,32 @@ import (
 	"github.com/jackcode/suitenet/pkg/models"
 )
 
-func (app *application) home(w http.ResponseWriter, r *http.Request) {
+func (app *application) dashboard(w http.ResponseWriter, r *http.Request) {
+
+	app.render(w, r, "dashboard.page.tmpl", &templateData{})
+}
+
+func (app *application) engineering(w http.ResponseWriter, r *http.Request) {
 	// Retrieve Incomplete Maintenance Requests to display on home page
-	mr, err := app.maintenanceRequests.OpenPendingInProgress()
+	mr, err := app.workOrders.OpenPendingInProgress()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	app.render(w, r, "home.page.tmpl", &templateData{
-		MaintenanceRequests: mr,
+	app.render(w, r, "engineering.page.tmpl", &templateData{
+		WorkOrders: mr,
 	})
 }
 
-func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Request) {
+func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
 	}
 
-	mr, err := app.maintenanceRequests.Get(id)
+	mr, err := app.workOrders.Get(id)
 	if err == models.ErrNoRecord {
 		app.notFound(w)
 		return
@@ -39,17 +44,17 @@ func (app *application) showMaintenanceRequest(w http.ResponseWriter, r *http.Re
 	}
 
 	app.render(w, r, "show.page.tmpl", &templateData{
-		MaintenanceRequest: mr,
+		WorkOrder: mr,
 	})
 }
 
-func (app *application) createMaintenanceRequestForm(w http.ResponseWriter, r *http.Request) {
+func (app *application) createWorkOrderForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "create.page.tmpl", &templateData{
 		Form: forms.New(nil),
 	})
 }
 
-func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.Request) {
+func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
@@ -66,14 +71,14 @@ func (app *application) createMaintenanceRequest(w http.ResponseWriter, r *http.
 		return
 	}
 
-	id, err := app.maintenanceRequests.Insert(form.Get("title"), form.Get("description"), form.Get("status"))
+	id, err := app.workOrders.Insert(form.Get("title"), form.Get("description"), form.Get("status"))
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
 	app.session.Put(r, "flash", "Maintenance Request successfully created!")
-	http.Redirect(w, r, fmt.Sprintf("/maintenanceRequest/%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/engineering/workOrder/%d", id), http.StatusSeeOther)
 }
 
 func (app *application) signupUserForm(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +98,7 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 	// Validate the form contents using the form helper we made earlier.
 	form := forms.New(r.PostForm)
 	form.Required("name", "username", "password")
-	form.MinLength("password", 10)
+	form.MinLength("password", 8)
 	form.MinLength("name", 2)
 	form.MinLength("username", 4)
 

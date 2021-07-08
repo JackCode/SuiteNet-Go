@@ -3,7 +3,7 @@
 {{define "title"}}Create a New Maintenance Request{{end}}
 
 {{define "body"}}
-<form action='/maintenanceRequest/create' method='POST'>
+<form action='/engineering/workOrder/create' method='POST'>
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     {{with .Form}}
     <div>

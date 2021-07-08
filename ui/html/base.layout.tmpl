@@ -4,35 +4,31 @@
     <head>
         <meta charset='utf-8'>
         <title>{{template "title" .}} - SuiteNet</title>
-        <!-- Link to the CSS stylesheet and favicon -->
         <link rel='stylesheet' href='/static/css/main.css'>
         <link rel='shortcut icon' href='/static/img/favicon.ico' type='image/x-icon'>
-        <!-- Also link to some fonts hosted by Google -->
         <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700'>
     </head>
     <body>
         <header>
             <h1><a href='/'>SuiteNet</a></h1>
         </header>
+        {{if .AuthenticatedUser}}
         <nav>
             <div>
-                {{if .AuthenticatedUser}}
-                    <a href='/'>Home</a>
-                    <a href="/maintenanceRequest/create">Maintenance</a>
-                {{end}}
+                <a href='/'>Dashboard</a>
+                <a href='/engineering'>Engineering</a>
+                <a href="/engineering/workOrder/create">W.O.</a>
             </div>
             <div>
-                {{if .AuthenticatedUser}}
                     <form action='/user/logout' method='POST'>
                         <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-                        <button>Logout</button>
+                        <button>Logout ({{.AuthenticatedUser.Name}})</button>
                     </form>
-                {{else}}
-                <a href='/user/signup'>Signup</a>
-                <a href='/user/login'>Login</a>
-                {{end}}              
+                <!-- <a href='/user/signup'>Signup</a> -->
+                <!-- <a href='/user/login'>Login</a> -->              
             </div>
         </nav>
+        {{end}}
         <section>
             {{with .Flash}}
             <div class='flash '>{{.}}</div>
@@ -40,7 +36,6 @@
             {{template "body" .}}
         </section>
         {{template "footer" .}}
-        <!-- And include the JavaScript file -->
         <script src="/static/js/main.js" type="text/javascript"></script>
     </body>
 </html>

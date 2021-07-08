@@ -11,7 +11,7 @@ var (
 	ErrDuplicateUsername  = errors.New("models: duplicate username")
 )
 
-type MaintenanceRequest struct {
+type WorkOrder struct {
 	ID          int
 	Title       string
 	Description string

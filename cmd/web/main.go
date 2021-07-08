@@ -16,13 +16,17 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
+type contextKey string
+
+var contextKeyUser = contextKey("user")
+
 type application struct {
-	errorLog            *log.Logger
-	infoLog             *log.Logger
-	session             *sessions.Session
-	maintenanceRequests *mysql.MaintenanceRequestModel
-	templateCache       map[string]*template.Template
-	users               *mysql.UserModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	session       *sessions.Session
+	workOrders    *mysql.WorkOrderModel
+	templateCache map[string]*template.Template
+	users         *mysql.UserModel
 }
 
 func main() {
@@ -59,12 +63,12 @@ func main() {
 	session.SameSite = http.SameSiteStrictMode
 
 	app := &application{
-		errorLog:            errorLog,
-		infoLog:             infoLog,
-		session:             session,
-		maintenanceRequests: &mysql.MaintenanceRequestModel{DB: db},
-		templateCache:       templateCache,
-		users:               &mysql.UserModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		session:       session,
+		workOrders:    &mysql.WorkOrderModel{DB: db},
+		templateCache: templateCache,
+		users:         &mysql.UserModel{DB: db},
 	}
 
 	tlsConfig := &tls.Config{
