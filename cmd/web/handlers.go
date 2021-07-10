@@ -34,7 +34,7 @@ func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mr, err := app.workOrders.Get(id)
+	workOrder, err := app.workOrders.Get(id)
 	if err == models.ErrNoRecord {
 		app.notFound(w)
 		return
@@ -44,7 +44,31 @@ func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.render(w, r, "show.page.tmpl", &templateData{
-		WorkOrder: mr,
+		WorkOrder: workOrder,
+	})
+}
+
+func (app *application) completeWorkOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+
+	app.workOrders.Complete(id)
+	workOrder, err := app.workOrders.Get(id)
+	if err == models.ErrNoRecord {
+		app.notFound(w)
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.session.Put(r, "flash", "Work order marked complete.")
+
+	app.render(w, r, "show.page.tmpl", &templateData{
+		WorkOrder: workOrder,
 	})
 }
 
@@ -62,8 +86,9 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 	}
 
 	form := forms.New(r.PostForm)
-	form.Required("title", "description", "status")
+	form.Required("title", "description", "status", "location")
 	form.MaxLength("title", 100)
+	form.MaxLength("title", 25)
 	form.PermittedValues("status", "OPEN", "PENDING", "IN PROGRESS", "COMPLETE")
 
 	if !form.Valid() {
@@ -71,13 +96,13 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	id, err := app.workOrders.Insert(form.Get("title"), form.Get("description"), form.Get("status"))
+	id, err := app.workOrders.Insert(form.Get("title"), form.Get("description"), form.Get("status"), r.Context().Value(contextKeyUser).(*models.User).Username, form.Get("location"))
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	app.session.Put(r, "flash", "Maintenance Request successfully created!")
+	app.session.Put(r, "flash", "Maintenance work order successfully created!")
 	http.Redirect(w, r, fmt.Sprintf("/engineering/workOrder/%d", id), http.StatusSeeOther)
 }
 

@@ -12,8 +12,16 @@
         <pre><code>{{.Description}}</code></pre>
         <div class='metadata'>
             <time>Created: {{humanDate .Created}}</time>
-            <span>Created by: USER</span>
+            <span>Created by: {{.CreatedBy}}</span>
         </div>
     </div>
+    {{end}}
+    {{if ne .WorkOrder.Status "COMPLETE"}}
+    <form action='/engineering/workOrder/{{.WorkOrder.ID}}' method='POST'>
+        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+        <div>
+            <input type='submit' value='Complete'>
+        </div>
+    </form>  
     {{end}}
 {{end}}

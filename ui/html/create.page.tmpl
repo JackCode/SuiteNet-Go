@@ -1,13 +1,13 @@
 {{template "base" .}}
 
-{{define "title"}}Create a New Maintenance Request{{end}}
+{{define "title"}}Create Work Order{{end}}
 
 {{define "body"}}
-<form action='/engineering/workOrder/create' method='POST'>
+<form action='/engineering/workOrder/create' method='POST' autocomplete="off">
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     {{with .Form}}
     <div>
-        <h2>Create New Work Order</h2>
+        <h2>Create Work Order</h2>
     </div>
     <div>
         <label>Title:</label>
@@ -15,6 +15,13 @@
             <label class='error'>{{.}}</label>
         {{end}}
         <input type='text' name='title' value='{{.Get "title"}}'>
+    </div>
+    <div>
+        <label>Location:</label>
+        {{with .Errors.Get "location"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='text' name='location' value='{{.Get "location"}}'>
     </div>
     <div>
         <label>Description:</label>
@@ -35,7 +42,7 @@
         <input type='radio' name='status' value='COMPLETE' {{if (eq $stat "COMPLETE")}}checked{{end}}> COMPLETE
     </div>
     <div>
-        <input type='submit' value='Create Maintenance Request'>
+        <input type='submit' value='Create Work Order'>
     </div>
     {{end}}
 </form>

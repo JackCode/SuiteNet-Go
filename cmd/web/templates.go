@@ -20,7 +20,7 @@ type templateData struct {
 }
 
 func humanDate(t time.Time) string {
-	return t.Format("02 Jan 2006 at 15:04")
+	return t.Local().Format("1/2/06 at 3:04 PM")
 }
 
 // Initialize a template.FuncMap object and store it in a global variable. This is

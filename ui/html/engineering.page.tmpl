@@ -8,18 +8,20 @@
      <table>
         <tr>
             <th>Title</th>
-            <th>Created</th>
+            <th>Location</th>
+            <th>Created On</th>
             <th>Status</th>
         </tr>
         {{range .WorkOrders}}
         <tr>
             <td><a href='/engineering/workOrder/{{.ID}}'>{{.Title}}</a></td>
+            <td>{{.Location}}</td>
             <td>{{humanDate .Created}}</td>
             <td>{{.Status}}</td>
         </tr>
         {{end}}
     </table>
     {{else}}
-        <p>All maintenance requests are complete!</p>
+        <p>All engineering work orders are complete!</p>
     {{end}}
 {{end}}

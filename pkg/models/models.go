@@ -17,6 +17,8 @@ type WorkOrder struct {
 	Description string
 	Created     time.Time
 	Status      string
+	CreatedBy   string
+	Location    string
 }
 
 type User struct {
