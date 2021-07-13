@@ -11,7 +11,7 @@
         </div>
         {{if .Notes}}
             {{range .Notes}}
-                <pre><code>{{humanDate .Created}}: {{.Content}} - {{.CreatedBy.FullName}}</code></pre>
+                <pre><code>{{.Content}} - <i>{{.CreatedBy.FullName}} ({{humanDate .Created}})</i></code></pre>
             {{end}}
         {{else}}
         <pre><code>This work order has no notes.</code></pre>

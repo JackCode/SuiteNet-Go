@@ -61,10 +61,9 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 	}
 
 	form := forms.New(r.PostForm)
-	form.Required("title", "description", "status", "location")
+	form.Required("title", "location")
 	form.MaxLength("title", 100)
-	form.MaxLength("title", 25)
-	form.PermittedValues("status", "OPEN", "PENDING", "IN PROGRESS", "COMPLETE")
+	form.PermittedValues("location", "Guestroom 101")
 
 	if !form.Valid() {
 		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
@@ -72,6 +71,11 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 	}
 
 	id, err := app.workOrders.Insert(form.Get("title"), form.Get("description"), form.Get("status"), r.Context().Value(contextKeyUser).(*models.SysUser).Username, form.Get("location"))
+	if id == 0 {
+		app.session.Put(r, "flash", "Internal error creating work order.")
+		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
+		return
+	}
 	if err != nil {
 		app.serverError(w, err)
 		return

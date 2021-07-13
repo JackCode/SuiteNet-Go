@@ -11,8 +11,13 @@ type EngineeringWorkOrderModel struct {
 }
 
 func (m *EngineeringWorkOrderModel) Insert(title, description, status, createdBy, location string) (int, error) {
-	stmt := `INSERT INTO engineering_work_order (title, description, created, status, created_by, location)
+	stmt := `INSERT INTO engineering_work_order (title, created, status, created_by, location)
 			 VALUES(?, ?, UTC_TIMESTAMP(), ?, ?, ?)`
+
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
 
 	result, err := m.DB.Exec(stmt, title, description, status, createdBy, location)
 	if err != nil {
