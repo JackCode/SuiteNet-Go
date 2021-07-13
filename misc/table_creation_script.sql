@@ -44,7 +44,8 @@ CREATE TABLE location (
 	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(100) NOT NULL,
     created DATETIME NOT NULL,
-    sys_user_id INTEGER NOT NULL
+    sys_user_id INTEGER NOT NULL,
+    is_active BOOLEAN NOT NULL
 );
 
 -- request_status table: Contains possible options for request stati (ie. open, complete, etc)
