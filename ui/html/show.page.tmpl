@@ -3,31 +3,58 @@
 {{define "title"}}Maintenance Request{{end}}
 
 {{define "body"}}
+
     {{with .WorkOrder}}
-    <div class='snippet'>
-        <div class='metadata'>
-            <strong>{{.Location.Title}} - {{.Title}}</strong>
-            <span>Status: {{.RequestStatus.Title}}</span>
-        </div>
-        {{if .Notes}}
-            {{range .Notes}}
-                <pre><code>{{.Content}} - <i>{{.CreatedBy.FullName}} ({{humanDate .Created}})</i></code></pre>
+        <div class='snippet'>
+            <div class='metadata'>
+                <strong>{{.Location.Title}} - {{.Title}}</strong>
+                <span>Status: {{.RequestStatus.Title}}</span>
+            </div>
+            {{if .Notes}}
+                {{range .Notes}}
+                    <pre><code>{{.Content}} - <i>{{.CreatedBy.FullName}} ({{humanDate .Created}})</i></code></pre>
+                {{end}}
+            {{else}}
+            <pre><code>This work order has no notes.</code></pre>
             {{end}}
-        {{else}}
-        <pre><code>This work order has no notes.</code></pre>
-        {{end}}
-        <div class='metadata'>
-            <time>Created: {{humanDate .Created}}</time>
-            <span>Created by: {{.CreatedBy.FullName}}</span>
+            <div class='metadata'>
+                <time>Created: {{humanDate .Created}}</time>
+                <span>Created by: {{.CreatedBy.FullName}}</span>
+            </div>
         </div>
+    {{end}}
+    
+    <div class="btn-group">
+    {{if not .WorkOrder.RequestStatus.IsClosed}}
+        <input type="submit" id="addNoteBtn" value="ADD NOTE">
+        <form class="btn-group" action='/engineering/workOrder/{{.WorkOrder.ID}}/close' method='POST'>
+            <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+            <input type='submit' value='CLOSE'>
+        </form>
+        
+    {{else}}
+        <form action='/engineering/workOrder/{{.WorkOrder.ID}}/reopen' method='POST'>
+            <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+            <div>
+                <input type='submit' value='RE-OPEN'>
+            </div>
+        </form>
     </div>
     {{end}}
-    {{if not .WorkOrder.RequestStatus.IsClosed}}
-    <form action='/engineering/workOrder/{{.WorkOrder.ID}}/complete' method='POST'>
-        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-        <div>
-            <input type='submit' value='COMPLETE'>
+    <div id="addNoteModal" class="modal">
+        <div class="modal-content">
+            <strong>{{.WorkOrder.Location.Title}} - {{.WorkOrder.Title}}</strong>
+            <span class="close">&times;</span>
+            <form action='/engineering/workOrder/{{.WorkOrder.ID}}/addNote' method='POST'>
+                <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+                <div>
+                    <label>Note:</label>
+                    <textarea name='note'></textarea>
+                </div>
+                <div>
+                    <input type='submit' value='SUBMIT NOTE'>
+                </div>
+            </form>
         </div>
-    </form>  
-    {{end}}
+    </div>
 {{end}}

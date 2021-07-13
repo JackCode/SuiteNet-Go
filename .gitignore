@@ -16,3 +16,6 @@
 
 # TLS certs
 tls/
+
+#database scripts
+misc/

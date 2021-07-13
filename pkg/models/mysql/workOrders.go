@@ -167,3 +167,113 @@ func (m *EngineeringWorkOrderModel) GetIncompleteEngineeringWorkOrders() ([]*mod
 	}
 	return workOrders, nil
 }
+
+func (m *EngineeringWorkOrderModel) Close(id, userID int) (*models.EngineeringWorkOrder, error) {
+	stmt := `UPDATE engineering_work_order
+	         SET request_status_id = 2
+			 WHERE id = ?`
+
+	noteStmt := `INSERT INTO engineering_work_order_note (eng_work_order_id, content, sys_user_id, created)
+			 VALUES (?, ?, ?, UTC_TIMESTAMP())`
+
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tx.Exec(stmt, id)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	_, err = tx.Exec(noteStmt, id, "[CLOSED]", userID)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	tx.Commit()
+	return m.Get(id)
+}
+
+func (m *EngineeringWorkOrderModel) Reopen(id, userID int) (*models.EngineeringWorkOrder, error) {
+	stmt := `UPDATE engineering_work_order
+	         SET request_status_id = 1
+			 WHERE id = ?`
+
+	noteStmt := `INSERT INTO engineering_work_order_note (eng_work_order_id, content, sys_user_id, created)
+			 VALUES (?, ?, ?, UTC_TIMESTAMP())`
+
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tx.Exec(stmt, id)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	_, err = tx.Exec(noteStmt, id, "[RE-OPENED]", userID)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	tx.Commit()
+	return m.Get(id)
+}
+
+func (m *EngineeringWorkOrderModel) AddNote(content string, id, userID int) (*models.EngineeringWorkOrder, error) {
+	stmt := `INSERT INTO engineering_work_order_note (eng_work_order_id, content, sys_user_id, created)
+			 VALUES (?, ?, ?, UTC_TIMESTAMP())`
+
+	_, err := m.DB.Exec(stmt, id, content, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return m.Get(id)
+}
+
+func (m *EngineeringWorkOrderModel) GetAllWorkOrders() ([]*models.EngineeringWorkOrder, error) {
+	stmt := `SELECT engineering_work_order.id, engineering_work_order.title, engineering_work_order.created, 
+	                location.id, location.title, 
+					request_status.id, request_status.title,
+					sys_user.id, sys_user.full_name
+			 FROM engineering_work_order
+			 INNER JOIN location ON engineering_work_order.location_id = location.id
+			 INNER JOIN request_status ON engineering_work_order.request_status_id = request_status.id
+			 INNER JOIN sys_user ON engineering_work_order.sys_user_id = sys_user.id`
+
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	workOrders := []*models.EngineeringWorkOrder{}
+
+	for rows.Next() {
+		workOrder := &models.EngineeringWorkOrder{
+			Location:      &models.Location{},
+			RequestStatus: &models.RequestStatus{},
+			CreatedBy:     &models.SysUser{},
+		}
+		err = rows.Scan(&workOrder.ID, &workOrder.Title, &workOrder.Created,
+			&workOrder.Location.ID, &workOrder.Location.Title,
+			&workOrder.RequestStatus.ID, &workOrder.RequestStatus.Title,
+			&workOrder.CreatedBy.ID, &workOrder.CreatedBy.FullName)
+		if err != nil {
+			return nil, err
+		}
+		workOrders = append(workOrders, workOrder)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return workOrders, nil
+}

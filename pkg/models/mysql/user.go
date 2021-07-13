@@ -89,3 +89,26 @@ func (m *UserModel) Get(id int) (*models.SysUser, error) {
 
 	return s, nil
 }
+
+func (m *UserModel) UpdatePassword(username, password string) error {
+	// Create a bcrypt hash of the plain-text password.
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return err
+	}
+
+	stmt := `UPDATE sys_user
+			 SET hashed_password = ?
+			 WHERE username = ?`
+
+	result, err := m.DB.Exec(stmt, hashedPassword, username)
+	if rows, err := result.RowsAffected(); rows == 0 {
+		if err != nil {
+			return models.ErrInvalidCredentials
+		}
+	}
+	if err != nil {
+		return nil
+	}
+	return err
+}

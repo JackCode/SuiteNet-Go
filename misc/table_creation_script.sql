@@ -74,6 +74,10 @@ CREATE TABLE engineering_work_order_note (
     created DATETIME NOT NULL
 );
 
+-- Create system admin user (default password: suitenetadmin - CHANGE THIS AFTER CREATION WITH SITE)
+INSERT INTO sys_user (id, full_name, username, hashed_password, created, sys_user_id, position_id, manager_id, is_active_user)
+VALUES (1, 'System Administrator', 'sysadmin', '$2y$12$/.e502VwHvjG3W/7rPpLNeB.n5.jwlJxB2v8tPvAgaq2rGiyM.DcO', UTC_TIMESTAMP(), 1, 1, 1, 1); 
+
 ALTER TABLE sys_user ADD CONSTRAINT sysuser_createdby_sysuser_fk FOREIGN KEY (sys_user_id) REFERENCES sys_user (id);
 ALTER TABLE sys_user ADD CONSTRAINT sysuser_is_position_fk FOREIGN KEY (position_id) REFERENCES position (id);
 ALTER TABLE sys_user ADD CONSTRAINT sysuser_managagedby_sysuser_fk FOREIGN KEY (manager_id) REFERENCES sys_user (id);
@@ -90,6 +94,7 @@ ALTER TABLE department ADD CONSTRAINT department_uc_title UNIQUE (title);
 ALTER TABLE engineering_work_order ADD CONSTRAINT workorder_in_location_fk FOREIGN KEY (location_id) REFERENCES location (id);
 ALTER TABLE engineering_work_order ADD CONSTRAINT workorder_createdby_sysuser_fk FOREIGN KEY (sys_user_id) REFERENCES sys_user (id);
 ALTER TABLE engineering_work_order ADD CONSTRAINT workorder_is_requeststatus_fk FOREIGN KEY (request_status_id) REFERENCES request_status (id);
+CREATE INDEX engworkorder_created_idx ON engineering_work_order(created);
 
 ALTER TABLE location ADD CONSTRAINT location_createdby_sysuser_fk FOREIGN KEY (sys_user_id) REFERENCES sys_user (id);
 ALTER TABLE location ADD CONSTRAINT location_uc_title UNIQUE (title);
@@ -102,4 +107,6 @@ ALTER TABLE engineering_work_order_change ADD CONSTRAINT change_createdby_sysuse
 
 ALTER TABLE engineering_work_order_note ADD CONSTRAINT note_belongsto_workorder_fk FOREIGN KEY (eng_work_order_id) REFERENCES engineering_work_order (id);
 ALTER TABLE engineering_work_order_note ADD CONSTRAINT note_createdby_sysuser_fk FOREIGN KEY (sys_user_id) REFERENCES sys_user (id);
-CREATE INDEX engworkorder_created_idx ON engineering_work_order_note(created);
+CREATE INDEX engworkordernote_created_idx ON engineering_work_order_note(created);
+CREATE INDEX engworkordernote_workorder_idx ON engineering_work_order_note(eng_work_order_id);
+

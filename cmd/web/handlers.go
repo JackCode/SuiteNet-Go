@@ -26,6 +26,19 @@ func (app *application) engineering(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (app *application) allWorkOrders(w http.ResponseWriter, r *http.Request) {
+	// Retrieve Incomplete Maintenance Requests to display on home page
+	mr, err := app.workOrders.GetAllWorkOrders()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.render(w, r, "engineering.all.page.tmpl", &templateData{
+		WorkOrders: mr,
+	})
+}
+
 func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
@@ -85,6 +98,53 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 	http.Redirect(w, r, fmt.Sprintf("/engineering/workOrder/%d", id), http.StatusSeeOther)
 }
 
+func (app *application) closeWorkOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
+
+	_, err = app.workOrders.Close(id, app.session.GetInt(r, "userID"))
+	if err == models.ErrNoRecord {
+		http.Redirect(w, r, redirectURL, 303)
+		app.session.Put(r, "generic", "Work order not found.")
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	app.session.Put(r, "flash", "Work order closed successfully.")
+
+	http.Redirect(w, r, redirectURL, 303)
+}
+
+func (app *application) reopenWorkOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
+
+	_, err = app.workOrders.Reopen(id, app.session.GetInt(r, "userID"))
+	if err == models.ErrNoRecord {
+		http.Redirect(w, r, redirectURL, 303)
+		app.session.Put(r, "generic", "Work order not found.")
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, redirectURL, 303)
+	app.session.Put(r, "flash", "Work order reopened successfully.")
+
+	http.Redirect(w, r, redirectURL, 303)
+}
+
 func (app *application) signupUserForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "signup.page.tmpl", &templateData{
 		Form: forms.New(nil),
@@ -101,7 +161,7 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 
 	// Validate the form contents using the form helper we made earlier.
 	form := forms.New(r.PostForm)
-	form.Required("name", "username", "password")
+	form.Required("name", "username", "password", "position", "manager")
 	form.MinLength("password", 8)
 	form.MinLength("name", 2)
 	form.MinLength("username", 4)
@@ -172,4 +232,90 @@ func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
 	// Add a flash message to the session to confirm to the user that they've been logged out.
 	app.session.Put(r, "flash", "You've been logged out successfully!")
 	http.Redirect(w, r, "/", 303)
+}
+
+func (app *application) resetPasswordForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "resetpassword.page.tmpl", &templateData{
+		Form: forms.New(nil),
+	})
+}
+
+func (app *application) resetPassword(w http.ResponseWriter, r *http.Request) {
+	// Parse the form data.
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validate the form contents using the form helper we made earlier.
+	form := forms.New(r.PostForm)
+	form.Required("username", "password")
+	form.MinLength("password", 8)
+	form.MinLength("username", 4)
+
+	// If there are any errors, redisplay the reset password form.
+	if !form.Valid() {
+		app.render(w, r, "resetpassword.page.tmpl", &templateData{Form: form})
+		return
+	}
+
+	// Try to create a new user record in the database. If the username already exists
+	// add an error message to the form and re-display it.
+	err = app.sys_users.UpdatePassword(form.Get("username"), form.Get("password"))
+	if err == models.ErrInvalidCredentials {
+		form.Errors.Add("generic", "Error updating password. Please check username.")
+		app.render(w, r, "resetpassword.page.tmpl", &templateData{Form: form})
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Otherwise add a confirmation flash message to the session confirming that
+	// their signup worked and asking them to log in.
+	app.session.Put(r, "flash", "Password update successful.")
+
+	// And redirect the user to the login page.
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) addNoteToWorkOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
+
+	// Parse the form data.
+	err = r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form := forms.New(r.PostForm)
+	form.Required("note")
+	// If there are any errors, redisplay the signup form.
+	if !form.Valid() {
+		http.Redirect(w, r, redirectURL, 303)
+		app.session.Put(r, "flash", "Note field blank. No note added.")
+		return
+	}
+
+	_, err = app.workOrders.AddNote(form.Get("note"), id, app.session.GetInt(r, "userID"))
+	if err == models.ErrNoRecord {
+		app.session.Put(r, "flash", "Work order not found.")
+		http.Redirect(w, r, redirectURL, 303)
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		http.Redirect(w, r, redirectURL, 303)
+		return
+	}
+
+	app.session.Put(r, "flash", "Note added to work order successfully.")
+
+	http.Redirect(w, r, redirectURL, 303)
 }
