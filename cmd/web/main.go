@@ -24,16 +24,16 @@ type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
 	session       *sessions.Session
-	workOrders    *mysql.WorkOrderModel
+	workOrders    *mysql.EngineeringWorkOrderModel
 	templateCache map[string]*template.Template
-	users         *mysql.UserModel
+	sys_user      *mysql.UserModel
 }
 
 func main() {
 	// Create flag for server port
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	// Create flag for MYSQL DSN
-	dsn := flag.String("dsn", "root:cvgck@/suitenet?parseTime=true", "MySQL data source name")
+	dsn := flag.String("dsn", "root:cvgck@/suitenet_dev?parseTime=true", "MySQL data source name")
 	// Define a new command-line flag for the session secret (a random key which
 	// will be used to encrypt and authenticate session cookies). It should be 32
 	// bytes long.
@@ -66,9 +66,9 @@ func main() {
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		session:       session,
-		workOrders:    &mysql.WorkOrderModel{DB: db},
+		workOrders:    &mysql.EngineeringWorkOrderModel{DB: db},
 		templateCache: templateCache,
-		users:         &mysql.UserModel{DB: db},
+		sys_user:      &mysql.UserModel{DB: db},
 	}
 
 	tlsConfig := &tls.Config{

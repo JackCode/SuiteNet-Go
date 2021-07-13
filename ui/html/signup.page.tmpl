@@ -7,7 +7,7 @@
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     {{with .Form}}
         <div>
-            <label>Name:</label>
+            <label>First and Last Name:</label>
             {{with .Errors.Get "name"}}
                 <label class='error'>{{.}}</label>
             {{end}}
@@ -26,6 +26,20 @@
                 <label class='error'>{{.}}</label>
             {{end}}
             <input type='password' name='password'>
+        </div>
+        <div>
+            <label>Position:</label>
+            {{with .Errors.Get "position"}}
+                <label class='error'>{{.}}</label>
+            {{end}}
+            <input type='text' name='position' value='{{.Get "position"}}'>
+        </div>
+        <div>
+            <label>Manager:</label>
+            {{with .Errors.Get "manager"}}
+                <label class='error'>{{.}}</label>
+            {{end}}
+            <input type='text' name='manager' value='{{.Get "manager"}}'>
         </div>
         <div>
             <input type='submit' value='Signup'>

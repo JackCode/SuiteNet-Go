@@ -74,8 +74,8 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 
 // The authenticatedUser method returns the ID of the current user from the
 // session, or zero if the request is from an unauthenticated user.
-func (app *application) authenticatedUser(r *http.Request) *models.User {
-	user, ok := r.Context().Value(contextKeyUser).(*models.User)
+func (app *application) authenticatedUser(r *http.Request) *models.SysUser {
+	user, ok := r.Context().Value(contextKeyUser).(*models.SysUser)
 	if !ok {
 		return nil
 	}

@@ -10,13 +10,12 @@ import (
 )
 
 func (app *application) dashboard(w http.ResponseWriter, r *http.Request) {
-
 	app.render(w, r, "dashboard.page.tmpl", &templateData{})
 }
 
 func (app *application) engineering(w http.ResponseWriter, r *http.Request) {
 	// Retrieve Incomplete Maintenance Requests to display on home page
-	mr, err := app.workOrders.OpenPendingInProgress()
+	mr, err := app.workOrders.GetIncompleteEngineeringWorkOrders()
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -48,30 +47,6 @@ func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (app *application) completeWorkOrder(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
-	if err != nil || id < 1 {
-		app.notFound(w)
-		return
-	}
-
-	app.workOrders.Complete(id)
-	workOrder, err := app.workOrders.Get(id)
-	if err == models.ErrNoRecord {
-		app.notFound(w)
-		return
-	} else if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	app.session.Put(r, "flash", "Work order marked complete.")
-
-	app.render(w, r, "show.page.tmpl", &templateData{
-		WorkOrder: workOrder,
-	})
-}
-
 func (app *application) createWorkOrderForm(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "create.page.tmpl", &templateData{
 		Form: forms.New(nil),
@@ -96,7 +71,7 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	id, err := app.workOrders.Insert(form.Get("title"), form.Get("description"), form.Get("status"), r.Context().Value(contextKeyUser).(*models.User).Username, form.Get("location"))
+	id, err := app.workOrders.Insert(form.Get("title"), form.Get("description"), form.Get("status"), r.Context().Value(contextKeyUser).(*models.SysUser).Username, form.Get("location"))
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -135,7 +110,8 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 
 	// Try to create a new user record in the database. If the username already exists
 	// add an error message to the form and re-display it.
-	err = app.users.Insert(form.Get("name"), form.Get("username"), form.Get("password"))
+	err = app.sys_user.Insert(form.Get("name"), form.Get("username"), form.Get("password"), form.Get("postion"), form.Get("manager"), form.Get("created_by"))
+
 	if err == models.ErrDuplicateUsername {
 		form.Errors.Add("username", "Username is already in use")
 		app.render(w, r, "signup.page.tmpl", &templateData{Form: form})
@@ -169,7 +145,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	// Check whether the credentials are valid. If they're not, add a generic error
 	// message to the form failures map and re-display the login page.
 	form := forms.New(r.PostForm)
-	id, err := app.users.Authenticate(form.Get("username"), form.Get("password"))
+	id, err := app.sys_user.Authenticate(form.Get("username"), form.Get("password"))
 	if err == models.ErrInvalidCredentials {
 		form.Errors.Add("generic", "Username or Password is incorrect")
 		app.render(w, r, "login.page.tmpl", &templateData{Form: form})

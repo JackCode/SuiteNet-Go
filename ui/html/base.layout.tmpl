@@ -23,7 +23,7 @@
             <div>
                     <form action='/user/logout' method='POST'>
                         <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-                        <button>Logout ({{.AuthenticatedUser.Name}})</button>
+                        <button>Logout ({{.AuthenticatedUser.FullName}})</button>
                     </form>
                 <!-- <a href='/user/signup'>Signup</a> -->
                 <!-- <a href='/user/login'>Login</a> -->              

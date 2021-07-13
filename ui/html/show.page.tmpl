@@ -6,21 +6,27 @@
     {{with .WorkOrder}}
     <div class='snippet'>
         <div class='metadata'>
-            <strong>{{.Title}}</strong>
-            <span>Status: {{.Status}}</span>
+            <strong>{{.Location.Title}} - {{.Title}}</strong>
+            <span>Status: {{.RequestStatus.Title}}</span>
         </div>
-        <pre><code>{{.Description}}</code></pre>
+        {{if .Notes}}
+            {{range .Notes}}
+                <pre><code>{{humanDate .Created}}: {{.Content}} - {{.CreatedBy.FullName}}</code></pre>
+            {{end}}
+        {{else}}
+        <pre><code>This work order has no notes.</code></pre>
+        {{end}}
         <div class='metadata'>
             <time>Created: {{humanDate .Created}}</time>
-            <span>Created by: {{.CreatedBy}}</span>
+            <span>Created by: {{.CreatedBy.FullName}}</span>
         </div>
     </div>
     {{end}}
-    {{if ne .WorkOrder.Status "COMPLETE"}}
-    <form action='/engineering/workOrder/{{.WorkOrder.ID}}' method='POST'>
+    {{if not .WorkOrder.RequestStatus.IsClosed}}
+    <form action='/engineering/workOrder/{{.WorkOrder.ID}}/complete' method='POST'>
         <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
         <div>
-            <input type='submit' value='Complete'>
+            <input type='submit' value='COMPLETE'>
         </div>
     </form>  
     {{end}}

@@ -10,14 +10,16 @@
             <th>Title</th>
             <th>Location</th>
             <th>Created On</th>
+            <th>Created By</th>
             <th>Status</th>
         </tr>
         {{range .WorkOrders}}
         <tr>
             <td><a href='/engineering/workOrder/{{.ID}}'>{{.Title}}</a></td>
-            <td>{{.Location}}</td>
+            <td>{{.Location.Title}}</td>
             <td>{{humanDate .Created}}</td>
-            <td>{{.Status}}</td>
+            <td>{{.CreatedBy.FullName}}</td>
+            <td>{{.RequestStatus.Title}}</td>
         </tr>
         {{end}}
     </table>

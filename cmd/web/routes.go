@@ -19,7 +19,6 @@ func (app *application) routes() http.Handler {
 	mux.Get("/engineering/workOrder/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createWorkOrderForm))
 	mux.Post("/engineering/workOrder/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createWorkOrder))
 	mux.Get("/engineering/workOrder/:id", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.showWorkOrder))
-	mux.Post("/engineering/workOrder/:id", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.completeWorkOrder))
 	mux.Get("/engineering", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.engineering))
 
 	// User routes
