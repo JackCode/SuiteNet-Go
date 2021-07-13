@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/jackcode/suitenet/pkg/models"
 )
@@ -10,25 +11,42 @@ type EngineeringWorkOrderModel struct {
 	DB *sql.DB
 }
 
-func (m *EngineeringWorkOrderModel) Insert(title, description, status, createdBy, location string) (int, error) {
-	stmt := `INSERT INTO engineering_work_order (title, created, status, created_by, location)
-			 VALUES(?, ?, UTC_TIMESTAMP(), ?, ?, ?)`
+func (m *EngineeringWorkOrderModel) Insert(title, locationID, noteContent string, createdByID int) (int, error) {
+	stmt := `INSERT INTO engineering_work_order (title, created, location_id, sys_user_id, request_status_id)
+			 VALUES(?, UTC_TIMESTAMP(), ?, ?, 1)`
+
+	noteStmt := `INSERT INTO engineering_work_order_note (eng_work_order_id, content, sys_user_id, created)
+	             VALUES (?, ?, ?, UTC_TIMESTAMP())`
 
 	tx, err := m.DB.Begin()
 	if err != nil {
 		return 0, err
 	}
 
-	result, err := m.DB.Exec(stmt, title, description, status, createdBy, location)
+	result, err := tx.Exec(stmt, title, locationID, createdByID)
 	if err != nil {
+		tx.Rollback()
 		return 0, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
+		tx.Rollback()
 		return 0, err
 	}
 
+	if strings.TrimSpace(noteContent) != "" {
+		result, err = tx.Exec(noteStmt, int(id), noteContent, createdByID)
+		if err != nil {
+			tx.Rollback()
+			return 0, err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
 	return int(id), nil
 }
 

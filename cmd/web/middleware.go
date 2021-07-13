@@ -85,7 +85,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		// Fetch the details of the current user from the database. If
 		// no matching record is found, remove the (invalid) userID from
 		// their session and call the next handler in the chain as normal.
-		user, err := app.sys_user.Get(app.session.GetInt(r, "userID"))
+		user, err := app.sys_users.Get(app.session.GetInt(r, "userID"))
 		if err == models.ErrNoRecord {
 			app.session.Remove(r, "userID")
 			next.ServeHTTP(w, r)

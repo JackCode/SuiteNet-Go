@@ -5,34 +5,36 @@
 {{define "body"}}
 <form action='/engineering/workOrder/create' method='POST' autocomplete="off">
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-    {{with .Form}}
     <div>
         <h2>Create Engineering Work Order</h2>
     </div>
     <div>
         <label>Title:</label>
-        {{with .Errors.Get "title"}}
+        {{with .Form.Errors.Get "title"}}
             <label class='error'>{{.}}</label>
         {{end}}
-        <input type='text' name='title' value='{{.Get "title"}}'>
+        <input type='text' name='title' value='{{.Form.Get "title"}}'>
     </div>
     <div>
         <label>Location:</label>
-        {{with .Errors.Get "location"}}
+        {{with .Form.Errors.Get "location"}}
             <label class='error'>{{.}}</label>
         {{end}}
-        <input type='text' name='location' value='{{.Get "location"}}'>
+        <select name="location">
+            {{range .Locations}}
+            <option value="{{.ID}}">{{.Title}}</option>
+            {{end}}
+        </select>
     </div>
     <div>
         <label>Note:</label>
-        {{with .Errors.Get "note"}}
+        {{with .Form.Errors.Get "note"}}
             <label class='error'>{{.}}</label>
         {{end}}
-        <textarea name='note'>{{.Get "note"}}</textarea>
+        <textarea name='note'>{{.Form.Get "note"}}</textarea>
     </div>
     <div>
         <input type='submit' value='Create Work Order'>
     </div>
-    {{end}}
 </form>
 {{end}}

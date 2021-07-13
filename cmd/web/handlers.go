@@ -63,14 +63,14 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 	form := forms.New(r.PostForm)
 	form.Required("title", "location")
 	form.MaxLength("title", 100)
-	form.PermittedValues("location", "Guestroom 101")
 
 	if !form.Valid() {
 		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
 		return
 	}
 
-	id, err := app.workOrders.Insert(form.Get("title"), form.Get("description"), form.Get("status"), r.Context().Value(contextKeyUser).(*models.SysUser).Username, form.Get("location"))
+	app.infoLog.Printf("Creating work oder: Title: %s, Location: %s, Content: %s, UserID: %d", form.Get("title"), form.Get("location"), form.Get("note"), app.session.GetInt(r, "userID"))
+	id, err := app.workOrders.Insert(form.Get("title"), form.Get("location"), form.Get("note"), app.session.GetInt(r, "userID"))
 	if id == 0 {
 		app.session.Put(r, "flash", "Internal error creating work order.")
 		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
@@ -114,7 +114,7 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 
 	// Try to create a new user record in the database. If the username already exists
 	// add an error message to the form and re-display it.
-	err = app.sys_user.Insert(form.Get("name"), form.Get("username"), form.Get("password"), form.Get("postion"), form.Get("manager"), form.Get("created_by"))
+	err = app.sys_users.Insert(form.Get("name"), form.Get("username"), form.Get("password"), form.Get("postion"), form.Get("manager"), form.Get("created_by"))
 
 	if err == models.ErrDuplicateUsername {
 		form.Errors.Add("username", "Username is already in use")
@@ -149,7 +149,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	// Check whether the credentials are valid. If they're not, add a generic error
 	// message to the form failures map and re-display the login page.
 	form := forms.New(r.PostForm)
-	id, err := app.sys_user.Authenticate(form.Get("username"), form.Get("password"))
+	id, err := app.sys_users.Authenticate(form.Get("username"), form.Get("password"))
 	if err == models.ErrInvalidCredentials {
 		form.Errors.Add("generic", "Username or Password is incorrect")
 		app.render(w, r, "login.page.tmpl", &templateData{Form: form})

@@ -26,7 +26,8 @@ type application struct {
 	session       *sessions.Session
 	workOrders    *mysql.EngineeringWorkOrderModel
 	templateCache map[string]*template.Template
-	sys_user      *mysql.UserModel
+	sys_users     *mysql.UserModel
+	locations     *mysql.LocationModel
 }
 
 func main() {
@@ -68,7 +69,8 @@ func main() {
 		session:       session,
 		workOrders:    &mysql.EngineeringWorkOrderModel{DB: db},
 		templateCache: templateCache,
-		sys_user:      &mysql.UserModel{DB: db},
+		sys_users:     &mysql.UserModel{DB: db},
+		locations:     &mysql.LocationModel{DB: db},
 	}
 
 	tlsConfig := &tls.Config{
