@@ -19,7 +19,7 @@
             {{end}}
             <div class='metadata'>
                 <time>Created: {{humanDate .Created}}</time>
-                <a id="addNoteBtn">Add Note</a>
+                {{if not .RequestStatus.IsClosed}}<a id="addNoteBtn">Add Note</a>{{end}}
                 <span>Created by: {{.CreatedBy.FullName}}</span>
             </div>
         </div>

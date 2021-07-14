@@ -8,7 +8,7 @@ CREATE TABLE sys_user (
     sys_user_id INTEGER NOT NULL,
     position_id INTEGER NOT NULL,
     manager_id INTEGER NOT NULL,
-	is_active_user BOOLEAN NOT NULL
+	is_active BOOLEAN NOT NULL
 );
 
 -- position table: Positions that sys_users are assigned to (i.e. front desk, engineer, housekeeper, etc)
@@ -17,7 +17,8 @@ CREATE TABLE position (
     title VARCHAR(100) NOT NULL,
     department_id INTEGER NOT NULL,
     created DATETIME NOT NULL,
-    sys_user_id INTEGER NOT NULL
+    sys_user_id INTEGER NOT NULL,
+    is_active BOOLEAN NOT NULL
 );
 
 -- department table: Departments that positions belong to (i.e. management, engineering, housekeeping, etc)
@@ -26,17 +27,28 @@ CREATE TABLE department (
     title VARCHAR(100) NOT NULL,
     manager_id INTEGER NOT NULL,
     created DATETIME NOT NULL,
-    sys_user_id INTEGER NOT NULL
+    sys_user_id INTEGER NOT NULL,
+    is_active BOOLEAN NOT NULL
 );
 
--- engineering_work_order table: Contains work orders created for engineering
-CREATE TABLE engineering_work_order (
+-- request table: Contains requests for engineering and housekeeping
+CREATE TABLE request (
 	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(100) NOT NULL,
     created DATETIME NOT NULL,
     location_id INTEGER NOT NULL,
     sys_user_id INTEGER NOT NULL,
-    request_status_id INTEGER NOT NULL
+    request_status_id INTEGER NOT NULL,
+    request_type INTEGER NOT NULL
+);
+
+-- request type table: contains types of requests
+CREATE TABLE request_type (
+	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(100) NOT NULL,
+    created DATETIME NOT NULL,
+    sys_user_id INTEGER NOT NULL,
+    department_id INTEGER NOT NULL
 );
 
 -- location table: Ccontains locatiosn in hotels for engineering work orders, housekeeping requests, and others

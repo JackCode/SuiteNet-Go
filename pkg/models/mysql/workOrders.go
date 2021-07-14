@@ -246,7 +246,7 @@ func (m *EngineeringWorkOrderModel) GetAllWorkOrders() ([]*models.EngineeringWor
 			 FROM engineering_work_order
 			 INNER JOIN location ON engineering_work_order.location_id = location.id
 			 INNER JOIN request_status ON engineering_work_order.request_status_id = request_status.id
-			 INNER JOIN sys_user ON engineering_work_order.sys_user_id = sys_user.id`
+			 INNER JOIN sys_user ON engineering_work_order.sys_user_id = sys_user.id ORDER BY created DESC`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
