@@ -13,14 +13,14 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-func (m *UserModel) Insert(fullName, username, password, positionID, managerID, createdByID string) error {
+func (m *UserModel) Insert(fullName, username, password, positionID, managerID string, createdByID int) error {
 	// Create a bcrypt hash of the plain-text password.
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return err
 	}
 
-	stmt := `INSERT INTO sys_user (full_name, username, hashed_password, created, sys_user_id, position_id, manager_id, is_active_user)
+	stmt := `INSERT INTO sys_user (full_name, username, hashed_password, created, sys_user_id, position_id, manager_id, is_active)
              VALUES(?, ?, ?, UTC_TIMESTAMP(), ?, ?, ?, TRUE)`
 
 	_, err = m.DB.Exec(stmt, fullName, username, string(hashedPassword), createdByID, positionID, managerID)
@@ -67,7 +67,7 @@ func (m *UserModel) Get(id int) (*models.SysUser, error) {
 		Manager:   &models.SysUser{},
 	}
 
-	stmt := `SELECT curr_user.id, curr_user.full_name, curr_user.username, curr_user.created, curr_user.is_active_user,
+	stmt := `SELECT curr_user.id, curr_user.full_name, curr_user.username, curr_user.created, curr_user.is_active,
 		     	    created_by.id AS created_by_id, created_by.full_name AS created_by_name,
 				    position.id AS position_id, position.title AS position_title,
 					managed_by.id AS manager_id, managed_by.full_name AS manager_name
@@ -111,4 +111,33 @@ func (m *UserModel) UpdatePassword(username, password string) error {
 		return nil
 	}
 	return err
+}
+
+func (m *UserModel) GetActiveUsers() ([]*models.SysUser, error) {
+	stmt := `SELECT id, full_name, created FROM sys_user WHERE is_active = TRUE`
+
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := []*models.SysUser{}
+
+	for rows.Next() {
+		user := &models.SysUser{}
+
+		err = rows.Scan(&user.ID, &user.FullName, &user.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

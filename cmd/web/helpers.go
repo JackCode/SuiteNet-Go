@@ -48,6 +48,16 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 		td.Locations = locations
 	}
 
+	positions, err := app.positions.GetActivePositions()
+	if err == nil {
+		td.Positions = positions
+	}
+
+	users, err := app.sys_users.GetActiveUsers()
+	if err == nil {
+		td.SysUsers = users
+	}
+
 	td.CSRFToken = nosurf.Token(r)
 	td.CurrentYear = time.Now().Year()
 	td.Flash = app.session.PopString(r, "flash")

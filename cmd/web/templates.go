@@ -19,6 +19,8 @@ type templateData struct {
 	WorkOrderNotes    []*models.EngineeringWorkOrderNote
 	WorkOrders        []*models.EngineeringWorkOrder
 	Locations         []*models.Location
+	Positions         []*models.Position
+	SysUsers          []*models.SysUser
 }
 
 func humanDate(t time.Time) string {

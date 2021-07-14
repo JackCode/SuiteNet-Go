@@ -5,45 +5,53 @@
 {{define "body"}}
 <form action='/user/signup' method='POST' novalidate autocomplete="off">
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-    {{with .Form}}
-        <div>
-            <label>First and Last Name:</label>
-            {{with .Errors.Get "name"}}
-                <label class='error'>{{.}}</label>
+    
+    <div>
+        <label>First and Last Name:</label>
+        {{with .Form.Errors.Get "name"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='text' name='name' value='{{.Form.Get "name"}}'>
+    </div>
+    <div>
+        <label>Username:</label>
+        {{with .Form.Errors.Get "username"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='text' name='username' value='{{.Form.Get "username"}}'>
+    </div>
+    <div>
+        <label>Password:</label>
+        {{with .Form.Errors.Get "password"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='password' name='password'>
+    </div>
+    <div>
+        <label>Position:</label>
+        {{with .Form.Errors.Get "position"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <select name="position">
+            {{range .Positions}}
+            <option value="{{.ID}}">{{.Title}}</option>
             {{end}}
-            <input type='text' name='name' value='{{.Get "name"}}'>
-        </div>
-        <div>
-            <label>Username:</label>
-            {{with .Errors.Get "username"}}
-                <label class='error'>{{.}}</label>
+        </select>
+    </div>
+    <div>
+        <label>Manager:</label>
+        {{with .Form.Errors.Get "manager"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <select name="manager">
+            {{range .SysUsers}}
+            <option value="{{.ID}}">{{.FullName}}</option>
             {{end}}
-            <input type='text' name='username' value='{{.Get "username"}}'>
-        </div>
-        <div>
-            <label>Password:</label>
-            {{with .Errors.Get "password"}}
-                <label class='error'>{{.}}</label>
-            {{end}}
-            <input type='password' name='password'>
-        </div>
-        <div>
-            <label>Position:</label>
-            {{with .Errors.Get "position"}}
-                <label class='error'>{{.}}</label>
-            {{end}}
-            <input type='text' name='position' value='{{.Get "position"}}'>
-        </div>
-        <div>
-            <label>Manager:</label>
-            {{with .Errors.Get "manager"}}
-                <label class='error'>{{.}}</label>
-            {{end}}
-            <input type='text' name='manager' value='{{.Get "manager"}}'>
-        </div>
-        <div>
-            <input type='submit' value='Signup'>
-        </div>
-    {{end}}
+        </select>
+    </div>
+    <div>
+        <input type='submit' value='Signup'>
+    </div>
+    
 </form>
 {{end}}

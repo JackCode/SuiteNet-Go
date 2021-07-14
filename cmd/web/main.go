@@ -28,6 +28,7 @@ type application struct {
 	templateCache map[string]*template.Template
 	sys_users     *mysql.UserModel
 	locations     *mysql.LocationModel
+	positions     *mysql.PositionModel
 }
 
 func main() {
@@ -71,6 +72,7 @@ func main() {
 		templateCache: templateCache,
 		sys_users:     &mysql.UserModel{DB: db},
 		locations:     &mysql.LocationModel{DB: db},
+		positions:     &mysql.PositionModel{DB: db},
 	}
 
 	tlsConfig := &tls.Config{

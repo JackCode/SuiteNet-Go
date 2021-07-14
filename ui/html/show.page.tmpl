@@ -19,6 +19,7 @@
             {{end}}
             <div class='metadata'>
                 <time>Created: {{humanDate .Created}}</time>
+                <a id="addNoteBtn">Add Note</a>
                 <span>Created by: {{.CreatedBy.FullName}}</span>
             </div>
         </div>
@@ -26,7 +27,6 @@
     
     <div class="btn-group">
     {{if not .WorkOrder.RequestStatus.IsClosed}}
-        <input type="submit" id="addNoteBtn" value="ADD NOTE">
         <form class="btn-group" action='/engineering/workOrder/{{.WorkOrder.ID}}/close' method='POST'>
             <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
             <input type='submit' value='CLOSE'>

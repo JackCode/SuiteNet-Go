@@ -66,11 +66,11 @@ type Location struct {
 }
 
 type Position struct {
-	ID           int
-	Title        string
-	Created      time.Time
-	CreatedByID  *SysUser
-	DepartmentID *Department
+	ID         int
+	Title      string
+	Created    time.Time
+	CreatedBy  *SysUser
+	Department *Department
 }
 
 type RequestStatus struct {

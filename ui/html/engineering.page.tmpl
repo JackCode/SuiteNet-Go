@@ -1,6 +1,6 @@
 {{template "base" .}}
 
-{{define "title"}}SuiteNet - Incomplete Work Orders{{end}}
+{{define "title"}}Incomplete Work Orders{{end}}
 
 {{define "body"}}
     <h2>Incomplete Work Orders <a href="/engineering/workOrder">(View All)</a></h2>
@@ -26,10 +26,7 @@
     {{else}}
         <p>All engineering work orders are complete!</p>
     {{end}}
-    <form action='/engineering/workOrder/create' method='GET'>
-        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-        <div class="btn-group">
-            <input type='submit' value='Create Work Order'>
-        </div>
-    </form> 
+    <div class="btn-group">
+        <a href="/engineering/workOrder/create">Create Work Order</a>
+    </div> 
 {{end}}
