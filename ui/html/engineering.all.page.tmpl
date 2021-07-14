@@ -4,7 +4,7 @@
 
 {{define "body"}}
     <h2>All Work Orders <a href="/engineering">(View Incomplete)</a></h2>
-    {{if .WorkOrders}}
+    {{if .Requests}}
      <table>
         <tr>
             <th>Title</th>
@@ -13,7 +13,7 @@
             <th>Created By</th>
             <th>Status</th>
         </tr>
-        {{range .WorkOrders}}
+        {{range .Requests}}
         <tr>
             <td><a href='/engineering/workOrder/{{.ID}}'>{{.Title}}</a></td>
             <td>{{.Location.Title}}</td>
@@ -27,6 +27,6 @@
         <p>No work order has been created.</p>
     {{end}}
     <div class="btn-group">
-        <a href="/engineering/workOrder/create">Create Work Order</a>
+        <a href="/engineering/workOrder/create">New</a>
     </div>
 {{end}}

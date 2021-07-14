@@ -15,12 +15,12 @@ type templateData struct {
 	CurrentYear       int
 	Flash             string
 	Form              *forms.Form
-	WorkOrder         *models.EngineeringWorkOrder
-	WorkOrderNotes    []*models.EngineeringWorkOrderNote
-	WorkOrders        []*models.EngineeringWorkOrder
+	Request           *models.Request
+	RequestNotes      []*models.RequestNote
+	Requests          []*models.Request
 	Locations         []*models.Location
 	Positions         []*models.Position
-	SysUsers          []*models.SysUser
+	Users             []*models.SysUser
 }
 
 func humanDate(t time.Time) string {

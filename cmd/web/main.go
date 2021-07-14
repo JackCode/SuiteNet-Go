@@ -24,7 +24,7 @@ type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
 	session       *sessions.Session
-	workOrders    *mysql.EngineeringWorkOrderModel
+	requests      *mysql.RequestModel
 	templateCache map[string]*template.Template
 	sys_users     *mysql.UserModel
 	locations     *mysql.LocationModel
@@ -68,7 +68,7 @@ func main() {
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		session:       session,
-		workOrders:    &mysql.EngineeringWorkOrderModel{DB: db},
+		requests:      &mysql.RequestModel{DB: db},
 		templateCache: templateCache,
 		sys_users:     &mysql.UserModel{DB: db},
 		locations:     &mysql.LocationModel{DB: db},

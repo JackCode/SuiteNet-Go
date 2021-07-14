@@ -4,7 +4,7 @@
 
 {{define "body"}}
 
-    {{with .WorkOrder}}
+    {{with .Request}}
         <div class='snippet'>
             <div class='metadata'>
                 <strong>{{.Location.Title}} - {{.Title}}</strong>
@@ -26,14 +26,14 @@
     {{end}}
     
     <div class="btn-group">
-    {{if not .WorkOrder.RequestStatus.IsClosed}}
-        <form class="btn-group" action='/engineering/workOrder/{{.WorkOrder.ID}}/close' method='POST'>
+    {{if not .Request.RequestStatus.IsClosed}}
+        <form class="btn-group" action='/engineering/workOrder/{{.Request.ID}}/close' method='POST'>
             <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
             <input type='submit' value='CLOSE'>
         </form>
         
     {{else}}
-        <form action='/engineering/workOrder/{{.WorkOrder.ID}}/reopen' method='POST'>
+        <form action='/engineering/workOrder/{{.Request.ID}}/reopen' method='POST'>
             <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
             <div>
                 <input type='submit' value='RE-OPEN'>
@@ -43,9 +43,9 @@
     {{end}}
     <div id="addNoteModal" class="modal">
         <div class="modal-content">
-            <strong>{{.WorkOrder.Location.Title}} - {{.WorkOrder.Title}}</strong>
+            <strong>{{.Request.Location.Title}} - {{.Request.Title}}</strong>
             <span class="close">&times;</span>
-            <form action='/engineering/workOrder/{{.WorkOrder.ID}}/addNote' method='POST'>
+            <form action='/engineering/workOrder/{{.Request.ID}}/addNote' method='POST'>
                 <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
                 <div>
                     <label>Note:</label>

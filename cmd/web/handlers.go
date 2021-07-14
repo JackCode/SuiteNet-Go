@@ -15,27 +15,27 @@ func (app *application) dashboard(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) engineering(w http.ResponseWriter, r *http.Request) {
 	// Retrieve Incomplete Maintenance Requests to display on home page
-	mr, err := app.workOrders.GetIncompleteEngineeringWorkOrders()
+	mr, err := app.requests.GetIncompleteRequests()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
 	app.render(w, r, "engineering.page.tmpl", &templateData{
-		WorkOrders: mr,
+		Requests: mr,
 	})
 }
 
 func (app *application) allWorkOrders(w http.ResponseWriter, r *http.Request) {
 	// Retrieve Incomplete Maintenance Requests to display on home page
-	mr, err := app.workOrders.GetAllWorkOrders()
+	mr, err := app.requests.GetAllWorkOrders()
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
 	app.render(w, r, "engineering.all.page.tmpl", &templateData{
-		WorkOrders: mr,
+		Requests: mr,
 	})
 }
 
@@ -46,7 +46,7 @@ func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	workOrder, err := app.workOrders.Get(id)
+	workOrder, err := app.requests.Get(id)
 	if err == models.ErrNoRecord {
 		app.notFound(w)
 		return
@@ -56,7 +56,7 @@ func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.render(w, r, "show.page.tmpl", &templateData{
-		WorkOrder: workOrder,
+		Request: workOrder,
 	})
 }
 
@@ -83,7 +83,7 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 	}
 
 	app.infoLog.Printf("Creating work oder: Title: %s, Location: %s, Content: %s, UserID: %d", form.Get("title"), form.Get("location"), form.Get("note"), app.session.GetInt(r, "userID"))
-	id, err := app.workOrders.Insert(form.Get("title"), form.Get("location"), form.Get("note"), app.session.GetInt(r, "userID"))
+	id, err := app.requests.Insert(form.Get("title"), form.Get("location"), form.Get("note"), app.session.GetInt(r, "userID"))
 	if id == 0 {
 		app.session.Put(r, "flash", "Internal error creating work order.")
 		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
@@ -106,7 +106,7 @@ func (app *application) closeWorkOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
 
-	_, err = app.workOrders.Close(id, app.session.GetInt(r, "userID"))
+	_, err = app.requests.Close(id, app.session.GetInt(r, "userID"))
 	if err == models.ErrNoRecord {
 		http.Redirect(w, r, redirectURL, 303)
 		app.session.Put(r, "generic", "Work order not found.")
@@ -129,7 +129,7 @@ func (app *application) reopenWorkOrder(w http.ResponseWriter, r *http.Request) 
 	}
 	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
 
-	_, err = app.workOrders.Reopen(id, app.session.GetInt(r, "userID"))
+	_, err = app.requests.Reopen(id, app.session.GetInt(r, "userID"))
 	if err == models.ErrNoRecord {
 		http.Redirect(w, r, redirectURL, 303)
 		app.session.Put(r, "generic", "Work order not found.")
@@ -304,7 +304,7 @@ func (app *application) addNoteToWorkOrder(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	_, err = app.workOrders.AddNote(form.Get("note"), id, app.session.GetInt(r, "userID"))
+	_, err = app.requests.AddNote(form.Get("note"), id, app.session.GetInt(r, "userID"))
 	if err == models.ErrNoRecord {
 		app.session.Put(r, "flash", "Work order not found.")
 		http.Redirect(w, r, redirectURL, 303)

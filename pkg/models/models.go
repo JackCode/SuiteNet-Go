@@ -11,14 +11,14 @@ var (
 	ErrDuplicateUsername  = errors.New("models: duplicate username")
 )
 
-type EngineeringWorkOrder struct {
+type Request struct {
 	ID            int
 	Title         string
 	Created       time.Time
 	Location      *Location
 	CreatedBy     *SysUser
 	RequestStatus *RequestStatus
-	Notes         []*EngineeringWorkOrderNote
+	Notes         []*RequestNote
 }
 
 type SysUser struct {
@@ -41,7 +41,7 @@ type Department struct {
 	CreatedBy *SysUser
 }
 
-type EngineeringWorkOrderChange struct {
+type RequestChange struct {
 	ID          int
 	WorkOrderID int
 	Field       string
@@ -51,7 +51,7 @@ type EngineeringWorkOrderChange struct {
 	CreatedBy   *SysUser
 }
 
-type EngineeringWorkOrderNote struct {
+type RequestNote struct {
 	ID        int
 	Content   string
 	Created   time.Time
@@ -79,4 +79,13 @@ type RequestStatus struct {
 	Created   time.Time
 	CreatedBy *SysUser
 	IsClosed  bool
+}
+
+type RequestType struct {
+	ID         int
+	Title      string
+	Created    time.Time
+	CreatedBy  *SysUser
+	Department *Department
+	IsActive   bool
 }

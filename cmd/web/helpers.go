@@ -55,7 +55,7 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 
 	users, err := app.sys_users.GetActiveUsers()
 	if err == nil {
-		td.SysUsers = users
+		td.Users = users
 	}
 
 	td.CSRFToken = nosurf.Token(r)
