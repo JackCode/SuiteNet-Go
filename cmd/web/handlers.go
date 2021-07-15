@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/jackcode/suitenet/pkg/forms"
 	"github.com/jackcode/suitenet/pkg/models"
@@ -51,6 +52,11 @@ func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 		return
 	} else if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	err = app.requests.Read(id, app.session.GetInt(r, "userID"))
+	if err != nil {
 		app.serverError(w, err)
 		return
 	}
@@ -174,7 +180,12 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 
 	// Try to create a new user record in the database. If the username already exists
 	// add an error message to the form and re-display it.
-	err = app.sys_users.Insert(form.Get("name"), form.Get("username"), form.Get("password"), form.Get("position"), form.Get("manager"), app.session.GetInt(r, "userID"))
+	err = app.sys_users.Insert(strings.TrimSpace(form.Get("name")),
+		strings.TrimSpace(form.Get("username")),
+		form.Get("password"),
+		form.Get("position"),
+		form.Get("manager"),
+		app.session.GetInt(r, "userID"))
 
 	if err == models.ErrDuplicateUsername {
 		form.Errors.Add("username", "Username is already in use")

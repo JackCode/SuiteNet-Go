@@ -22,6 +22,17 @@
                 {{if not .RequestStatus.IsClosed}}<a id="addNoteBtn">Add Note</a>{{end}}
                 <span>Created by: {{.CreatedBy.FullName}}</span>
             </div>
+            <div class='metadata'>
+                <small>
+                Read By:
+                    {{$last := len .ReadBy | lastElement}}
+                    {{range $index, $user := .ReadBy}}
+                        {{.FullName}}{{if ne $index $last}}, {{end}} 
+                    {{else}}
+                        Nobody
+                    {{end}}
+                </small>
+            </div>
         </div>
     {{end}}
     

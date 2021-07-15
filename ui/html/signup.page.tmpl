@@ -44,7 +44,7 @@
             <label class='error'>{{.}}</label>
         {{end}}
         <select name="manager">
-            {{range .SysUsers}}
+            {{range .Users}}
             <option value="{{.ID}}">{{.FullName}}</option>
             {{end}}
         </select>

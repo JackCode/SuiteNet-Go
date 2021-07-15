@@ -27,11 +27,16 @@ func humanDate(t time.Time) string {
 	return t.Local().Format("1/2/06 at 3:04 PM")
 }
 
+func lastElement(length int) int {
+	return length - 1
+}
+
 // Initialize a template.FuncMap object and store it in a global variable. This is
 // essentially a string-keyed map which acts as a lookup between the names of our
 // custom template functions and the functions themselves.
 var functions = template.FuncMap{
-	"humanDate": humanDate,
+	"humanDate":   humanDate,
+	"lastElement": lastElement,
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

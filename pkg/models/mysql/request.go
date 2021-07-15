@@ -70,6 +70,11 @@ func (m *RequestModel) Get(id int) (*models.Request, error) {
 					INNER JOIN sys_user ON request_note.sys_user_id = sys_user.id
 			  		WHERE request_id = ? ORDER BY created DESC`
 
+	readStmt := `SELECT su.id, su.full_name 
+				 FROM request_read
+				 INNER JOIN sys_user AS su ON request_read.sys_user_id = su.id
+				 WHERE request_read.request_id = ? AND su.is_active`
+
 	tx, err := m.DB.Begin()
 	if err != nil {
 		return nil, err
@@ -119,11 +124,35 @@ func (m *RequestModel) Get(id int) (*models.Request, error) {
 		return nil, err
 	}
 
+	rows, err := tx.Query(readStmt, id)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := []*models.SysUser{}
+
+	for rows.Next() {
+		user := &models.SysUser{}
+		err = rows.Scan(&user.ID, &user.FullName)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err = notes.Err(); err != nil {
+		return nil, err
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 	request.Notes = requestNotes
+	request.ReadBy = users
 	return request, nil
 }
 
@@ -276,4 +305,20 @@ func (m *RequestModel) GetAllWorkOrders() ([]*models.Request, error) {
 		return nil, err
 	}
 	return requests, nil
+}
+
+func (m *RequestModel) Read(requestID, userID int) error {
+	stmt := `INSERT INTO request_read (request_id, sys_user_id, created)
+		     SELECT ?, ?, UTC_TIMESTAMP()
+	         FROM dual
+	         WHERE NOT EXISTS (SELECT 1 
+						       FROM request_read 
+						       WHERE request_id = ? AND sys_user_id = ?)`
+
+	_, err := m.DB.Exec(stmt, requestID, userID, requestID, userID)
+	if err != nil {
+		return err
+	}
+
+	return err
 }

@@ -19,6 +19,7 @@ type Request struct {
 	CreatedBy     *SysUser
 	RequestStatus *RequestStatus
 	Notes         []*RequestNote
+	ReadBy        []*SysUser
 }
 
 type SysUser struct {

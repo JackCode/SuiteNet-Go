@@ -269,6 +269,10 @@ button:hover {
   float: right;
 }
 
+.snippet .metadata small {
+  font-size: smaller
+}
+
 div.flash {
   color: #FFFFFF;
   font-weight: bold;
