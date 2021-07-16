@@ -99,7 +99,7 @@ func (app *application) createRequest(w http.ResponseWriter, r *http.Request) {
 
 	id, err := app.requests.Insert(form.Get("title"), form.Get("location"), form.Get("note"), department, app.session.GetInt(r, "userID"))
 	if id == 0 {
-		app.session.Put(r, "flash", "Internal error creating work order.")
+		app.session.Put(r, "flash", "Internal error creating request.")
 		app.render(w, r, "create.page.tmpl", &templateData{
 			Form:       form,
 			Department: department,
@@ -191,7 +191,7 @@ func (app *application) addNoteToRequest(w http.ResponseWriter, r *http.Request)
 
 	_, err = app.requests.AddNote(form.Get("note"), department, id, app.session.GetInt(r, "userID"))
 	if err == models.ErrNoRecord {
-		app.session.Put(r, "flash", "Work order not found.")
+		app.session.Put(r, "flash", "Request not found.")
 		http.Redirect(w, r, redirectURL, 303)
 		return
 	} else if err != nil {
@@ -200,7 +200,7 @@ func (app *application) addNoteToRequest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	app.session.Put(r, "flash", "Note added to work order successfully.")
+	app.session.Put(r, "flash", "Note added to request successfully.")
 
 	http.Redirect(w, r, redirectURL, 303)
 }

@@ -1,13 +1,13 @@
 {{template "base" .}}
-
-{{define "title"}}Create Work Order{{end}}
+{{$department := capitalizeFirstLetter .Department}}
+{{define "title"}}Create {{$department}} Request{{end}}
 
 {{define "body"}}
-{{$department := capitalizeFirstLetter .Department}}
+
 <form action='/{{$department}}/request/create' method='POST' autocomplete="off">
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     <div>
-        <h2>Create {{$department}} Work Order</h2>
+        <h2>Create {{$department}} Request</h2>
     </div>
     <div>
         <label>Title:</label>
