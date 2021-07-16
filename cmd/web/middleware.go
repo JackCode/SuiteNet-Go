@@ -46,21 +46,6 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// If the user is not authenticated, redirect them to the login page and
-		// return from the middleware chain so that no subsequent handlers in
-		// the chain are executed.
-		if app.authenticatedUser(r) == nil {
-			http.Redirect(w, r, "/user/login", 302)
-			return
-		}
-
-		// Otherwise call the next handler in the chain.
-		next.ServeHTTP(w, r)
-	})
-}
-
 func noSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
 	csrfHandler.SetBaseCookie(http.Cookie{
@@ -103,4 +88,40 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), contextKeyUser, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If the user is not authenticated, redirect them to the login page and
+		// return from the middleware chain so that no subsequent handlers in
+		// the chain are executed.
+		if app.authenticatedUser(r) == nil {
+			http.Redirect(w, r, "/user/login", 302)
+			return
+		}
+
+		// Otherwise call the next handler in the chain.
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) requireRoles(requiredRoles ...string) (mw func(http.Handler) http.Handler) {
+
+	mw = func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			for _, role := range requiredRoles {
+				if app.authenticatedRole(r, role) != nil {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+
+			w.WriteHeader(403)
+			app.accessDenied(w, r)
+			return
+		})
+	}
+
+	return
 }

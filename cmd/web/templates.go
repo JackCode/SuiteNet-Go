@@ -31,12 +31,23 @@ func lastElement(length int) int {
 	return length - 1
 }
 
+// Checks SiteRole slice for given role
+func rolesContain(roles []*models.SiteRole, role string) bool {
+	for _, a := range roles {
+		if a.Title == role {
+			return true
+		}
+	}
+	return false
+}
+
 // Initialize a template.FuncMap object and store it in a global variable. This is
 // essentially a string-keyed map which acts as a lookup between the names of our
 // custom template functions and the functions themselves.
 var functions = template.FuncMap{
-	"humanDate":   humanDate,
-	"lastElement": lastElement,
+	"humanDate":    humanDate,
+	"lastElement":  lastElement,
+	"rolesContain": rolesContain,
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

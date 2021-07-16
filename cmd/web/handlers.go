@@ -330,3 +330,7 @@ func (app *application) addNoteToWorkOrder(w http.ResponseWriter, r *http.Reques
 
 	http.Redirect(w, r, redirectURL, 303)
 }
+
+func (app *application) accessDenied(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "denied.page.tmpl", &templateData{})
+}

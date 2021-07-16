@@ -31,6 +31,7 @@ type SysUser struct {
 	CreatedBy      *SysUser
 	Position       *Position
 	Manager        *SysUser
+	SiteRoles      []*SiteRole
 	ActiveUser     bool
 }
 
@@ -89,4 +90,12 @@ type RequestType struct {
 	CreatedBy  *SysUser
 	Department *Department
 	IsActive   bool
+}
+
+type SiteRole struct {
+	ID        int
+	Title     string
+	Created   time.Time
+	CreatedBy *SysUser
+	IsActive  bool
 }

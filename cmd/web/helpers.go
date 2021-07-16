@@ -96,3 +96,13 @@ func (app *application) authenticatedUser(r *http.Request) *models.SysUser {
 	}
 	return user
 }
+
+// The authenticatedUser method returns the ID of the current user from the
+// session, or zero if the request is from an unauthenticated user.
+func (app *application) authenticatedRole(r *http.Request, requiredRole string) *models.SysUser {
+	user, ok := r.Context().Value(contextKeyUser).(*models.SysUser)
+	if !ok || !rolesContain(user.SiteRoles, requiredRole) {
+		return nil
+	}
+	return user
+}

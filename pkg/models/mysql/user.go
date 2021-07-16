@@ -77,16 +77,60 @@ func (m *UserModel) Get(id int) (*models.SysUser, error) {
 			INNER JOIN sys_user AS managed_by ON curr_user.manager_id = managed_by.id
 			WHERE curr_user.id = ?`
 
-	err := m.DB.QueryRow(stmt, id).Scan(&s.ID, &s.FullName, &s.Username, &s.Created, &s.ActiveUser,
+	rolesStmt := `SELECT C.id, C.title
+				  FROM user_has_role AS A
+				  INNER JOIN sys_user AS B ON A.sys_user_id = B.id
+				  INNER JOIN site_role AS C ON A.site_role_id = C.id
+				  WHERE B.id = ? AND B.is_active AND C.is_active`
+
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.QueryRow(stmt, id).Scan(&s.ID, &s.FullName, &s.Username, &s.Created, &s.ActiveUser,
 		&s.CreatedBy.ID, &s.CreatedBy.FullName,
 		&s.Position.ID, &s.Position.Title,
 		&s.Manager.ID, &s.Manager.FullName)
 	if err == sql.ErrNoRows {
+		tx.Rollback()
 		return nil, models.ErrNoRecord
 	} else if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
+	rows, err := tx.Query(rolesStmt, id)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	defer rows.Close()
+
+	siteRoles := []*models.SiteRole{}
+
+	for rows.Next() {
+		siteRole := &models.SiteRole{}
+
+		err := rows.Scan(&siteRole.ID, &siteRole.Title)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		siteRoles = append(siteRoles, siteRole)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	s.SiteRoles = siteRoles
 	return s, nil
 }
 
