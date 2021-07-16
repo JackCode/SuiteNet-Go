@@ -20,6 +20,7 @@ type Request struct {
 	RequestStatus *RequestStatus
 	Notes         []*RequestNote
 	ReadBy        []*SysUser
+	Department    *Department
 }
 
 type SysUser struct {
@@ -43,15 +44,15 @@ type Department struct {
 	CreatedBy *SysUser
 }
 
-type RequestChange struct {
-	ID          int
-	WorkOrderID int
-	Field       string
-	OldValue    string
-	NewValue    string
-	Created     time.Time
-	CreatedBy   *SysUser
-}
+// type RequestChange struct {
+// 	ID          int
+// 	WorkOrderID int
+// 	Field       string
+// 	OldValue    string
+// 	NewValue    string
+// 	Created     time.Time
+// 	CreatedBy   *SysUser
+// }
 
 type RequestNote struct {
 	ID        int

@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/jackcode/suitenet/pkg/forms"
@@ -14,6 +15,7 @@ type templateData struct {
 	CSRFToken         string
 	CurrentYear       int
 	Flash             string
+	Department        string
 	Form              *forms.Form
 	Request           *models.Request
 	RequestNotes      []*models.RequestNote
@@ -41,13 +43,18 @@ func rolesContain(roles []*models.SiteRole, role string) bool {
 	return false
 }
 
+func capitalizeFirstLetter(word string) string {
+	return strings.Title(strings.ToLower(word))
+}
+
 // Initialize a template.FuncMap object and store it in a global variable. This is
 // essentially a string-keyed map which acts as a lookup between the names of our
 // custom template functions and the functions themselves.
 var functions = template.FuncMap{
-	"humanDate":    humanDate,
-	"lastElement":  lastElement,
-	"rolesContain": rolesContain,
+	"humanDate":             humanDate,
+	"lastElement":           lastElement,
+	"rolesContain":          rolesContain,
+	"capitalizeFirstLetter": capitalizeFirstLetter,
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

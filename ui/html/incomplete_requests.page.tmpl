@@ -1,9 +1,10 @@
 {{template "base" .}}
 
-{{define "title"}}Incomplete Work Orders{{end}}
+{{define "title"}}Incomplete Requests{{end}}
 
 {{define "body"}}
-    <h2>Incomplete Work Orders <a href="/engineering/workOrder">(View All)</a></h2>
+    {{$department := capitalizeFirstLetter .Department}}
+    <h2>Incomplete {{$department}} Requests <a href="/{{$department}}/request/all">(View All)</a></h2>
     {{if .Requests}}
      <table>
         <tr>
@@ -15,7 +16,7 @@
         </tr>
         {{range .Requests}}
         <tr>
-            <td><a href='/engineering/workOrder/{{.ID}}'>{{.Title}}</a></td>
+            <td><a href='/{{$department}}/request/{{.ID}}'>{{.Title}}</a></td>
             <td>{{.Location.Title}}</td>
             <td>{{humanDate .Created}}</td>
             <td>{{.CreatedBy.FullName}}</td>
@@ -24,7 +25,7 @@
         {{end}}
     </table>
     {{else}}
-        <p>All engineering work orders are complete!</p>
+        <p>All {{$department}} requests are complete!</p>
     {{end}}
-    {{template "newWorkOrderBtn" .}}
+    {{template "newRequestBtn" .}}
 {{end}}

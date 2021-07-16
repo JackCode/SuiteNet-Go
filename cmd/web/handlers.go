@@ -14,40 +14,43 @@ func (app *application) dashboard(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "dashboard.page.tmpl", &templateData{})
 }
 
-func (app *application) engineering(w http.ResponseWriter, r *http.Request) {
-	// Retrieve Incomplete Maintenance Requests to display on home page
-	mr, err := app.requests.GetIncompleteRequests()
+func (app *application) showIncompleteRequests(w http.ResponseWriter, r *http.Request) {
+	department := r.URL.Query().Get(":department")
+	request, err := app.requests.GetIncompleteRequests(department)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	app.render(w, r, "engineering.page.tmpl", &templateData{
-		Requests: mr,
+	app.render(w, r, "incomplete_requests.page.tmpl", &templateData{
+		Requests:   request,
+		Department: department,
 	})
 }
 
-func (app *application) allWorkOrders(w http.ResponseWriter, r *http.Request) {
-	// Retrieve Incomplete Maintenance Requests to display on home page
-	mr, err := app.requests.GetAllWorkOrders()
+func (app *application) allRequests(w http.ResponseWriter, r *http.Request) {
+	department := r.URL.Query().Get(":department")
+	requests, err := app.requests.GetAllRequests(department)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	app.render(w, r, "engineering.all.page.tmpl", &templateData{
-		Requests: mr,
+	app.render(w, r, "all_requests.page.tmpl", &templateData{
+		Requests:   requests,
+		Department: department,
 	})
 }
 
-func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
+func (app *application) showRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
 	}
 
-	workOrder, err := app.requests.Get(id)
+	department := r.URL.Query().Get(":department")
+	request, err := app.requests.Get(id, department)
 	if err == models.ErrNoRecord {
 		app.notFound(w)
 		return
@@ -55,24 +58,28 @@ func (app *application) showWorkOrder(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-	err = app.requests.Read(id, app.session.GetInt(r, "userID"))
+	err = app.requests.MarkRead(id, app.session.GetInt(r, "userID"))
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
 	app.render(w, r, "show.page.tmpl", &templateData{
-		Request: workOrder,
+		Request:    request,
+		Department: department,
 	})
 }
 
-func (app *application) createWorkOrderForm(w http.ResponseWriter, r *http.Request) {
+func (app *application) createRequestForm(w http.ResponseWriter, r *http.Request) {
+	department := r.URL.Query().Get(":department")
 	app.render(w, r, "create.page.tmpl", &templateData{
-		Form: forms.New(nil),
+		Form:       forms.New(nil),
+		Department: department,
 	})
 }
 
-func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) {
+func (app *application) createRequest(w http.ResponseWriter, r *http.Request) {
+	department := r.URL.Query().Get(":department")
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
@@ -84,15 +91,19 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 	form.MaxLength("title", 100)
 
 	if !form.Valid() {
-		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
+		app.render(w, r, "create.page.tmpl", &templateData{
+			Form:       form,
+			Department: department})
 		return
 	}
 
-	app.infoLog.Printf("Creating work oder: Title: %s, Location: %s, Content: %s, UserID: %d", form.Get("title"), form.Get("location"), form.Get("note"), app.session.GetInt(r, "userID"))
-	id, err := app.requests.Insert(form.Get("title"), form.Get("location"), form.Get("note"), app.session.GetInt(r, "userID"))
+	id, err := app.requests.Insert(form.Get("title"), form.Get("location"), form.Get("note"), department, app.session.GetInt(r, "userID"))
 	if id == 0 {
 		app.session.Put(r, "flash", "Internal error creating work order.")
-		app.render(w, r, "create.page.tmpl", &templateData{Form: form})
+		app.render(w, r, "create.page.tmpl", &templateData{
+			Form:       form,
+			Department: department,
+		})
 		return
 	}
 	if err != nil {
@@ -100,45 +111,47 @@ func (app *application) createWorkOrder(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	app.session.Put(r, "flash", "Maintenance work order successfully created!")
-	http.Redirect(w, r, fmt.Sprintf("/engineering/workOrder/%d", id), http.StatusSeeOther)
+	app.session.Put(r, "flash", "Request successfully created!")
+	http.Redirect(w, r, fmt.Sprintf("/%s/request/%d", department, id), http.StatusSeeOther)
 }
 
-func (app *application) closeWorkOrder(w http.ResponseWriter, r *http.Request) {
+func (app *application) closeRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
 	}
-	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
+	department := r.URL.Query().Get(":department")
+	redirectURL := fmt.Sprintf("/%s/request/%d", department, id)
 
-	_, err = app.requests.Close(id, app.session.GetInt(r, "userID"))
+	_, err = app.requests.Close(id, app.session.GetInt(r, "userID"), department)
 	if err == models.ErrNoRecord {
 		http.Redirect(w, r, redirectURL, 303)
-		app.session.Put(r, "generic", "Work order not found.")
+		app.session.Put(r, "generic", "Request not found.")
 		return
 	} else if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	app.session.Put(r, "flash", "Work order closed successfully.")
+	app.session.Put(r, "flash", "Request closed successfully.")
 
 	http.Redirect(w, r, redirectURL, 303)
 }
 
-func (app *application) reopenWorkOrder(w http.ResponseWriter, r *http.Request) {
+func (app *application) reopenRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
 	}
-	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
+	department := r.URL.Query().Get(":department")
+	redirectURL := fmt.Sprintf("/%s/request/%d", department, id)
 
-	_, err = app.requests.Reopen(id, app.session.GetInt(r, "userID"))
+	_, err = app.requests.Reopen(id, app.session.GetInt(r, "userID"), department)
 	if err == models.ErrNoRecord {
 		http.Redirect(w, r, redirectURL, 303)
-		app.session.Put(r, "generic", "Work order not found.")
+		app.session.Put(r, "generic", "Request not found.")
 		return
 	} else if err != nil {
 		app.serverError(w, err)
@@ -146,7 +159,48 @@ func (app *application) reopenWorkOrder(w http.ResponseWriter, r *http.Request) 
 	}
 
 	http.Redirect(w, r, redirectURL, 303)
-	app.session.Put(r, "flash", "Work order reopened successfully.")
+	app.session.Put(r, "flash", "Request reopened successfully.")
+
+	http.Redirect(w, r, redirectURL, 303)
+}
+
+func (app *application) addNoteToRequest(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
+	if err != nil || id < 1 {
+		app.notFound(w)
+		return
+	}
+	department := r.URL.Query().Get(":department")
+	redirectURL := fmt.Sprintf("/%s/request/%d", department, id)
+
+	// Parse the form data.
+	err = r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form := forms.New(r.PostForm)
+	form.Required("note")
+	// If there are any errors, redisplay the signup form.
+	if !form.Valid() {
+		http.Redirect(w, r, redirectURL, 303)
+		app.session.Put(r, "flash", "Note field blank. No note added.")
+		return
+	}
+
+	_, err = app.requests.AddNote(form.Get("note"), department, id, app.session.GetInt(r, "userID"))
+	if err == models.ErrNoRecord {
+		app.session.Put(r, "flash", "Work order not found.")
+		http.Redirect(w, r, redirectURL, 303)
+		return
+	} else if err != nil {
+		app.serverError(w, err)
+		http.Redirect(w, r, redirectURL, 303)
+		return
+	}
+
+	app.session.Put(r, "flash", "Note added to work order successfully.")
 
 	http.Redirect(w, r, redirectURL, 303)
 }
@@ -289,46 +343,6 @@ func (app *application) resetPassword(w http.ResponseWriter, r *http.Request) {
 
 	// And redirect the user to the login page.
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func (app *application) addNoteToWorkOrder(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
-	if err != nil || id < 1 {
-		app.notFound(w)
-		return
-	}
-	redirectURL := fmt.Sprintf("/engineering/workOrder/%d", id)
-
-	// Parse the form data.
-	err = r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
-	form := forms.New(r.PostForm)
-	form.Required("note")
-	// If there are any errors, redisplay the signup form.
-	if !form.Valid() {
-		http.Redirect(w, r, redirectURL, 303)
-		app.session.Put(r, "flash", "Note field blank. No note added.")
-		return
-	}
-
-	_, err = app.requests.AddNote(form.Get("note"), id, app.session.GetInt(r, "userID"))
-	if err == models.ErrNoRecord {
-		app.session.Put(r, "flash", "Work order not found.")
-		http.Redirect(w, r, redirectURL, 303)
-		return
-	} else if err != nil {
-		app.serverError(w, err)
-		http.Redirect(w, r, redirectURL, 303)
-		return
-	}
-
-	app.session.Put(r, "flash", "Note added to work order successfully.")
-
-	http.Redirect(w, r, redirectURL, 303)
 }
 
 func (app *application) accessDenied(w http.ResponseWriter, r *http.Request) {

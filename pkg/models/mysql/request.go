@@ -11,9 +11,10 @@ type RequestModel struct {
 	DB *sql.DB
 }
 
-func (m *RequestModel) Insert(title, locationID, noteContent string, createdByID int) (int, error) {
-	stmt := `INSERT INTO request (title, created, location_id, sys_user_id, request_status_id, request_type_id)
-			 VALUES(?, UTC_TIMESTAMP(), ?, ?, 1, 1)`
+func (m *RequestModel) Insert(title, locationID, noteContent, department string, createdByID int) (int, error) {
+	stmt := `INSERT INTO request (title, created, location_id, sys_user_id, request_status_id, department_id)
+			 VALUES(?, UTC_TIMESTAMP(), ?, ?, 1, 
+			 (SELECT id FROM department WHERE title = ?))`
 
 	noteStmt := `INSERT INTO request_note (request_id, content, sys_user_id, created)
 	             VALUES (?, ?, ?, UTC_TIMESTAMP())`
@@ -23,7 +24,7 @@ func (m *RequestModel) Insert(title, locationID, noteContent string, createdByID
 		return 0, err
 	}
 
-	result, err := tx.Exec(stmt, title, locationID, createdByID)
+	result, err := tx.Exec(stmt, title, locationID, createdByID, department)
 	if err != nil {
 		tx.Rollback()
 		return 0, err
@@ -50,16 +51,19 @@ func (m *RequestModel) Insert(title, locationID, noteContent string, createdByID
 	return int(id), nil
 }
 
-func (m *RequestModel) Get(id int) (*models.Request, error) {
+func (m *RequestModel) Get(id int, department string) (*models.Request, error) {
 	stmt := `SELECT  request.id, request.title, request.created, 
 			         location.id, location.title,
 			         sys_user.id, sys_user.full_name,
-			         request_status_id, request_status.title, request_status.is_closed
+			         request_status_id, request_status.title, request_status.is_closed,
+					 department.id, department.title
 			FROM request
 			INNER JOIN location ON request.location_id = location.id
 			INNER JOIN sys_user ON request.sys_user_id = sys_user.id
 			INNER JOIN request_status ON request.request_status_id = request_status.id
-			WHERE request.id = ?`
+			INNER JOIN department ON request.department_id = department.id
+			WHERE request.id = ? 
+				AND request.department_id = (SELECT id FROM department WHERE title = ?)`
 
 	notesStmt := `SELECT request_note.id, 
 						 request_note.content, 
@@ -84,12 +88,16 @@ func (m *RequestModel) Get(id int) (*models.Request, error) {
 		Location:      &models.Location{},
 		CreatedBy:     &models.SysUser{},
 		RequestStatus: &models.RequestStatus{},
+		Department:    &models.Department{},
 	}
-	err = tx.QueryRow(stmt, id).Scan(
+
+	err = tx.QueryRow(stmt, id, department).Scan(
 		&request.ID, &request.Title, &request.Created,
 		&request.Location.ID, &request.Location.Title,
 		&request.CreatedBy.ID, &request.CreatedBy.FullName,
-		&request.RequestStatus.ID, &request.RequestStatus.Title, &request.RequestStatus.IsClosed)
+		&request.RequestStatus.ID, &request.RequestStatus.Title, &request.RequestStatus.IsClosed,
+		&request.Department.ID, &request.Department.Title,
+	)
 	if err == sql.ErrNoRows {
 		tx.Rollback()
 		return nil, models.ErrNoRecord
@@ -156,7 +164,7 @@ func (m *RequestModel) Get(id int) (*models.Request, error) {
 	return request, nil
 }
 
-func (m *RequestModel) GetIncompleteRequests() ([]*models.Request, error) {
+func (m *RequestModel) GetIncompleteRequests(department string) ([]*models.Request, error) {
 	stmt := `SELECT request.id, request.title, request.created, 
 	                location.id, location.title, 
 					request_status.id, request_status.title,
@@ -165,9 +173,11 @@ func (m *RequestModel) GetIncompleteRequests() ([]*models.Request, error) {
 			 INNER JOIN location ON request.location_id = location.id
 			 INNER JOIN request_status ON request.request_status_id = request_status.id
 			 INNER JOIN sys_user ON request.sys_user_id = sys_user.id
-			 WHERE request_status.is_closed != TRUE`
+			 WHERE request_status.is_closed != TRUE
+			 AND department_id = 
+		     	(SELECT department.id FROM department WHERE department.title = ?)`
 
-	rows, err := m.DB.Query(stmt)
+	rows, err := m.DB.Query(stmt, department)
 	if err != nil {
 		return nil, err
 	}
@@ -197,10 +207,11 @@ func (m *RequestModel) GetIncompleteRequests() ([]*models.Request, error) {
 	return requests, nil
 }
 
-func (m *RequestModel) Close(id, userID int) (*models.Request, error) {
+func (m *RequestModel) Close(id, userID int, department string) (*models.Request, error) {
 	stmt := `UPDATE request
 	         SET request_status_id = 2
-			 WHERE id = ?`
+			 WHERE id = ?
+			 AND department_id = (SELECT id FROM department WHERE title = ?)`
 
 	noteStmt := `INSERT INTO request_note (request_id, content, sys_user_id, created)
 			 VALUES (?, ?, ?, UTC_TIMESTAMP())`
@@ -210,7 +221,7 @@ func (m *RequestModel) Close(id, userID int) (*models.Request, error) {
 		return nil, err
 	}
 
-	_, err = tx.Exec(stmt, id)
+	_, err = tx.Exec(stmt, id, department)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -223,13 +234,14 @@ func (m *RequestModel) Close(id, userID int) (*models.Request, error) {
 	}
 
 	tx.Commit()
-	return m.Get(id)
+	return m.Get(id, department)
 }
 
-func (m *RequestModel) Reopen(id, userID int) (*models.Request, error) {
+func (m *RequestModel) Reopen(id, userID int, department string) (*models.Request, error) {
 	stmt := `UPDATE request
 	         SET request_status_id = 1
-			 WHERE id = ?`
+			 WHERE id = ?
+			 AND department_id = (SELECT id FROM department WHERE title = ?)`
 
 	noteStmt := `INSERT INTO request_note (request_id, content, sys_user_id, created)
 			 VALUES (?, ?, ?, UTC_TIMESTAMP())`
@@ -239,7 +251,7 @@ func (m *RequestModel) Reopen(id, userID int) (*models.Request, error) {
 		return nil, err
 	}
 
-	_, err = tx.Exec(stmt, id)
+	_, err = tx.Exec(stmt, id, department)
 	if err != nil {
 		tx.Rollback()
 		return nil, err
@@ -252,10 +264,10 @@ func (m *RequestModel) Reopen(id, userID int) (*models.Request, error) {
 	}
 
 	tx.Commit()
-	return m.Get(id)
+	return m.Get(id, department)
 }
 
-func (m *RequestModel) AddNote(content string, id, userID int) (*models.Request, error) {
+func (m *RequestModel) AddNote(content, department string, id, userID int) (*models.Request, error) {
 	stmt := `INSERT INTO request_note (request_id, content, sys_user_id, created)
 			 VALUES (?, ?, ?, UTC_TIMESTAMP())`
 
@@ -264,10 +276,10 @@ func (m *RequestModel) AddNote(content string, id, userID int) (*models.Request,
 		return nil, err
 	}
 
-	return m.Get(id)
+	return m.Get(id, department)
 }
 
-func (m *RequestModel) GetAllWorkOrders() ([]*models.Request, error) {
+func (m *RequestModel) GetAllRequests(department string) ([]*models.Request, error) {
 	stmt := `SELECT request.id, request.title, request.created, 
 	                location.id, location.title, 
 					request_status.id, request_status.title,
@@ -275,9 +287,12 @@ func (m *RequestModel) GetAllWorkOrders() ([]*models.Request, error) {
 			 FROM request
 			 INNER JOIN location ON request.location_id = location.id
 			 INNER JOIN request_status ON request.request_status_id = request_status.id
-			 INNER JOIN sys_user ON request.sys_user_id = sys_user.id ORDER BY created DESC`
+			 INNER JOIN sys_user ON request.sys_user_id = sys_user.id 
+			 WHERE request.department_id = 
+			 		(SELECT department.id FROM department WHERE department.title = ?) 
+			 ORDER BY created DESC`
 
-	rows, err := m.DB.Query(stmt)
+	rows, err := m.DB.Query(stmt, department)
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +322,7 @@ func (m *RequestModel) GetAllWorkOrders() ([]*models.Request, error) {
 	return requests, nil
 }
 
-func (m *RequestModel) Read(requestID, userID int) error {
+func (m *RequestModel) MarkRead(requestID, userID int) error {
 	stmt := `INSERT INTO request_read (request_id, sys_user_id, created)
 		     SELECT ?, ?, UTC_TIMESTAMP()
 	         FROM dual

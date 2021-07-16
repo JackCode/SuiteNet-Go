@@ -3,10 +3,11 @@
 {{define "title"}}Create Work Order{{end}}
 
 {{define "body"}}
-<form action='/engineering/workOrder/create' method='POST' autocomplete="off">
+{{$department := capitalizeFirstLetter .Department}}
+<form action='/{{$department}}/request/create' method='POST' autocomplete="off">
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     <div>
-        <h2>Create Engineering Work Order</h2>
+        <h2>Create {{$department}} Work Order</h2>
     </div>
     <div>
         <label>Title:</label>
@@ -34,7 +35,7 @@
         <textarea name='note'>{{.Form.Get "note"}}</textarea>
     </div>
     <div class="btn-group">
-        <input type='submit' value='Create Work Order'>
+        <input type='submit' value='Create Request'>
     </div>
 </form>
 {{end}}
