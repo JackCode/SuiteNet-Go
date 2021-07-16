@@ -19,8 +19,8 @@
         <nav>
             <div>
                 <a href='/'>Dashboard</a>
-                <a href='/engineering'>Engineering</a>
-                
+                <a href='/engineering/request/incomplete'>Engineering</a>
+                <a href='/housekeeping/request/incomplete'>Housekeeping</a>
             </div>
             <div>
                     {{if rolesContain .AuthenticatedUser.SiteRoles "admin"}}<a href=/user/signup>Admin</a>{{end}}

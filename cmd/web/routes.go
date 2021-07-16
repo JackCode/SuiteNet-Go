@@ -16,14 +16,14 @@ func (app *application) routes() http.Handler {
 	mux.Get("/", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.dashboard))
 
 	// Engineering Routes
-	mux.Get("/engineering/workOrder/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createWorkOrderForm))
-	mux.Post("/engineering/workOrder/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createWorkOrder))
-	mux.Get("/engineering/workOrder/:id", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.showWorkOrder))
-	mux.Post("/engineering/workOrder/:id/close", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.closeWorkOrder))
-	mux.Post("/engineering/workOrder/:id/reopen", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.reopenWorkOrder))
-	mux.Get("/engineering", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.engineering))
-	mux.Get("/engineering/workOrder", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.allWorkOrders))
-	mux.Post("/engineering/workOrder/:id/addNote", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.addNoteToWorkOrder))
+	mux.Get("/:department/request/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createRequestForm))
+	mux.Post("/:department/request/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createRequest))
+	mux.Get("/:department/request/all", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.allRequests))
+	mux.Get("/:department/request/incomplete", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.showIncompleteRequests))
+	mux.Get("/:department/request/:id", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.showRequest))
+	mux.Post("/:department/request/:id/close", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.closeRequest))
+	mux.Post("/:department/request/:id/reopen", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.reopenRequest))
+	mux.Post("/:department/request/:id/addNote", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.addNoteToRequest))
 
 	// User routes
 	mux.Get("/user/signup", dynamicMiddleware.Append(app.requireRoles("admin")).ThenFunc(app.signupUserForm))

@@ -1,6 +1,6 @@
 {{template "base" .}}
 
-{{define "title"}}Maintenance Request{{end}}
+{{define "title"}}{{.Department}} Request{{end}}
 
 {{define "body"}}
 
@@ -38,13 +38,13 @@
     
     <div class="btn-group">
     {{if not .Request.RequestStatus.IsClosed}}
-        <form class="btn-group" action='/engineering/workOrder/{{.Request.ID}}/close' method='POST'>
+        <form class="btn-group" action='/{{.Department}}/request/{{.Request.ID}}/close' method='POST'>
             <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
             <input type='submit' value='CLOSE'>
         </form>
         
     {{else}}
-        <form action='/engineering/workOrder/{{.Request.ID}}/reopen' method='POST'>
+        <form action='/{{.Department}}/request/{{.Request.ID}}/reopen' method='POST'>
             <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
             <div>
                 <input type='submit' value='RE-OPEN'>
@@ -56,7 +56,7 @@
         <div class="modal-content">
             <strong>{{.Request.Location.Title}} - {{.Request.Title}}</strong>
             <span class="close">&times;</span>
-            <form action='/engineering/workOrder/{{.Request.ID}}/addNote' method='POST'>
+            <form action='/{{.Department}}/request/{{.Request.ID}}/addNote' method='POST'>
                 <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
                 <div>
                     <label>Note:</label>

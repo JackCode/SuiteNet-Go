@@ -1,7 +1,10 @@
+// Add triangle to mark which page is active
 var navLinks = document.querySelectorAll("nav a");
+
+//window.location.pathname.split('/')[1].toLowerCase()
 for (var i = 0; i < navLinks.length; i++) {
 	var link = navLinks[i]
-	if (link.getAttribute('href') == window.location.pathname) {
+	if (link.getAttribute('href').includes(window.location.pathname.split('/')[1].toLowerCase())) {
 		link.classList.add("live");
 		break;
 	}
