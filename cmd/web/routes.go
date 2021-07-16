@@ -26,13 +26,16 @@ func (app *application) routes() http.Handler {
 	mux.Post("/engineering/workOrder/:id/addNote", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.addNoteToWorkOrder))
 
 	// User routes
-	mux.Get("/user/signup", dynamicMiddleware.ThenFunc(app.signupUserForm))
-	mux.Post("/user/signup", dynamicMiddleware.ThenFunc(app.signupUser))
+	mux.Get("/user/signup", dynamicMiddleware.Append(app.requireRoles("admin")).ThenFunc(app.signupUserForm))
+	mux.Post("/user/signup", dynamicMiddleware.Append(app.requireRoles("admin")).ThenFunc(app.signupUser))
 	mux.Get("/user/login", dynamicMiddleware.ThenFunc(app.loginUserForm))
 	mux.Post("/user/login", dynamicMiddleware.ThenFunc(app.loginUser))
 	mux.Post("/user/logout", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.logoutUser))
 	mux.Get("/user/resetPassword", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.resetPasswordForm))
 	mux.Post("/user/resetPassword", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.resetPassword))
+
+	// Miscellaneous Routes
+	mux.Get("/accessdenied", dynamicMiddleware.ThenFunc(app.accessDenied))
 
 	// Static server
 	fileServer := http.FileServer(http.Dir("./ui/static/"))

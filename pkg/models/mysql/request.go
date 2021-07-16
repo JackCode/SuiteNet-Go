@@ -143,7 +143,7 @@ func (m *RequestModel) Get(id int) (*models.Request, error) {
 		users = append(users, user)
 	}
 
-	if err = notes.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
