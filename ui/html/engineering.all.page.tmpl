@@ -26,7 +26,5 @@
     {{else}}
         <p>No work order has been created.</p>
     {{end}}
-    <div class="btn-group">
-        <a href="/engineering/workOrder/create">New</a>
-    </div>
+    {{template "newWorkOrderBtn" .}}
 {{end}}

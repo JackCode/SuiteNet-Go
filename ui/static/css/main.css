@@ -248,6 +248,10 @@ button:hover {
   float: right;
 }
 
+.snippet pre code span {
+  float: right;
+}
+
 
 .snippet .metadata strong {
   color: #34495E;
