@@ -97,3 +97,12 @@ func (f *Form) MatchesPattern(field string, pattern *regexp.Regexp) {
 func (f *Form) Valid() bool {
 	return len(f.Errors) == 0
 }
+
+func (f *Form) ConfirmPasswordMatches(newPassword, confirmPassword string) {
+	first := f.Get(newPassword)
+	second := f.Get(confirmPassword)
+
+	if first != second {
+		f.Errors.Add(confirmPassword, "The passwords do not match")
+	}
+}
