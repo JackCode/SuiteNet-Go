@@ -15,7 +15,7 @@ func (app *application) routes() http.Handler {
 	// Dashboard
 	mux.Get("/", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.dashboard))
 
-	// Engineering Routes
+	// Request Routes
 	mux.Get("/:department/request/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createRequestForm))
 	mux.Post("/:department/request/create", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.createRequest))
 	mux.Get("/:department/request/all", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.allRequests))
@@ -35,7 +35,6 @@ func (app *application) routes() http.Handler {
 	mux.Post("/user/resetPassword", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.resetPassword))
 
 	// Miscellaneous Routes
-	mux.Get("/accessdenied", dynamicMiddleware.ThenFunc(app.accessDenied))
 
 	// Static server
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
