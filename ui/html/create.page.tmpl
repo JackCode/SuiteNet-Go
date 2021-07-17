@@ -1,9 +1,9 @@
 {{template "base" .}}
-{{$department := capitalizeFirstLetter .Department}}
-{{define "title"}}Create {{$department}} Request{{end}}
+
+{{define "title"}}Create Request{{end}}
 
 {{define "body"}}
-
+{{$department := capitalizeFirstLetter .Department}}
 <form action='/{{$department}}/request/create' method='POST' autocomplete="off">
     <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
     <div>
