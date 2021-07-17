@@ -4,7 +4,7 @@
 
 {{define "body"}}
     {{$department := capitalizeFirstLetter .Department}}
-    <h2>All {{$department}} Requests<a href="/{{$department}}/request/incomplete">(View Incomplete)</a></h2>
+    <h2>All {{$department}} Requests <a href="/{{$department}}/request/incomplete">(View Incomplete)</a></h2>
     {{if .Requests}}
      <table>
         <tr>

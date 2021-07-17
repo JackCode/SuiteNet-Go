@@ -30,8 +30,12 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 // For consistency, we'll also implement a notFound helper. This is simply a
 // convenience wrapper around clientError which sends a 404 Not Found response to
 // the user.
-func (app *application) notFound(w http.ResponseWriter) {
-	app.clientError(w, http.StatusNotFound)
+func (app *application) notFound(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "not_found.page.tmpl", &templateData{})
+}
+
+func (app *application) accessDenied(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "denied.page.tmpl", &templateData{})
 }
 
 // Create an addDefaultData helper. This takes a pointer to a templateData

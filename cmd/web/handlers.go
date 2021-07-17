@@ -45,14 +45,14 @@ func (app *application) allRequests(w http.ResponseWriter, r *http.Request) {
 func (app *application) showRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
-		app.notFound(w)
+		app.notFound(w, r)
 		return
 	}
 
 	department := r.URL.Query().Get(":department")
 	request, err := app.requests.Get(id, department)
 	if err == models.ErrNoRecord {
-		app.notFound(w)
+		app.notFound(w, r)
 		return
 	} else if err != nil {
 		app.serverError(w, err)
@@ -118,7 +118,7 @@ func (app *application) createRequest(w http.ResponseWriter, r *http.Request) {
 func (app *application) closeRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
-		app.notFound(w)
+		app.notFound(w, r)
 		return
 	}
 	department := r.URL.Query().Get(":department")
@@ -142,7 +142,7 @@ func (app *application) closeRequest(w http.ResponseWriter, r *http.Request) {
 func (app *application) reopenRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
-		app.notFound(w)
+		app.notFound(w, r)
 		return
 	}
 	department := r.URL.Query().Get(":department")
@@ -167,7 +167,7 @@ func (app *application) reopenRequest(w http.ResponseWriter, r *http.Request) {
 func (app *application) addNoteToRequest(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(":id"))
 	if err != nil || id < 1 {
-		app.notFound(w)
+		app.notFound(w, r)
 		return
 	}
 	department := r.URL.Query().Get(":department")
@@ -343,8 +343,4 @@ func (app *application) resetPassword(w http.ResponseWriter, r *http.Request) {
 
 	// And redirect the user to the login page.
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func (app *application) accessDenied(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "denied.page.tmpl", &templateData{})
 }
