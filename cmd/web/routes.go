@@ -31,8 +31,8 @@ func (app *application) routes() http.Handler {
 	mux.Get("/user/login", dynamicMiddleware.ThenFunc(app.loginUserForm))
 	mux.Post("/user/login", dynamicMiddleware.ThenFunc(app.loginUser))
 	mux.Post("/user/logout", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.logoutUser))
-	mux.Get("/user/changePassword", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.resetPasswordForm))
-	mux.Post("/user/changePassword", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.resetPassword))
+	mux.Get("/user/changePassword", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.changePasswordForm))
+	mux.Post("/user/changePassword", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.changePassword))
 	mux.Get("/user/clock/:direction", dynamicMiddleware.Append(app.requireAuthenticatedUser).ThenFunc(app.clockUser))
 
 	// Miscellaneous Routes

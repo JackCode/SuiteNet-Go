@@ -299,13 +299,13 @@ func (app *application) logoutUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 303)
 }
 
-func (app *application) resetPasswordForm(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "resetpassword.page.tmpl", &templateData{
+func (app *application) changePasswordForm(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, "change_password.page.tmpl", &templateData{
 		Form: forms.New(nil),
 	})
 }
 
-func (app *application) resetPassword(w http.ResponseWriter, r *http.Request) {
+func (app *application) changePassword(w http.ResponseWriter, r *http.Request) {
 	// Parse the form data.
 	err := r.ParseForm()
 	if err != nil {
