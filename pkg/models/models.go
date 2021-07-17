@@ -34,6 +34,7 @@ type SysUser struct {
 	Manager        *SysUser
 	SiteRoles      []*SiteRole
 	ActiveUser     bool
+	ClockedIn      bool
 }
 
 type Department struct {

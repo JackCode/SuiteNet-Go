@@ -24,12 +24,19 @@
             </div>
             <div>
                     {{if rolesContain .AuthenticatedUser.SiteRoles "admin"}}<a href=/user/signup>Admin</a>{{end}}
+                    {{$direction := "In"}}
+                    {{if .AuthenticatedUser.ClockedIn}}{{$direction = "Out"}}{{end}}
+                    <a href="/user/clock/{{$direction}}" 
+                        {{if .AuthenticatedUser.ClockedIn}}
+                            onClick="alert('You are off shift.\n\nYou will not receive text notifications for new requests assigned to you.')"
+                        {{else}}
+                            onClick="alert('You are on shift.\n\nYou will receive text notifications for new requests assigned to you.')"
+                        {{end}}>Clock {{$direction}}</a>
                     <form action='/user/logout' method='POST'>
                         <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
                         <button>Logout ({{.AuthenticatedUser.FullName}})</button>
                     </form>
-                <!-- <a href='/user/signup'>Signup</a> -->
-                <!-- <a href='/user/login'>Login</a> -->              
+
             </div>
         </nav>
         {{end}}

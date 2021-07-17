@@ -344,3 +344,9 @@ func (app *application) resetPassword(w http.ResponseWriter, r *http.Request) {
 	// And redirect the user to the login page.
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func (app *application) clockUser(w http.ResponseWriter, r *http.Request) {
+	direction := r.URL.Query().Get(":direction")
+	app.sys_users.ClockUser(strings.ToLower(direction), app.session.GetInt(r, "userID"))
+	http.Redirect(w, r, "/", 303)
+}

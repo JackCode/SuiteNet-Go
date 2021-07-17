@@ -67,7 +67,7 @@ func (m *UserModel) Get(id int) (*models.SysUser, error) {
 		Manager:   &models.SysUser{},
 	}
 
-	stmt := `SELECT curr_user.id, curr_user.full_name, curr_user.username, curr_user.created, curr_user.is_active,
+	stmt := `SELECT curr_user.id, curr_user.full_name, curr_user.username, curr_user.created, curr_user.is_active, curr_user.is_clocked_in,
 		     	    created_by.id AS created_by_id, created_by.full_name AS created_by_name,
 				    position.id AS position_id, position.title AS position_title,
 					managed_by.id AS manager_id, managed_by.full_name AS manager_name
@@ -88,7 +88,7 @@ func (m *UserModel) Get(id int) (*models.SysUser, error) {
 		return nil, err
 	}
 
-	err = tx.QueryRow(stmt, id).Scan(&s.ID, &s.FullName, &s.Username, &s.Created, &s.ActiveUser,
+	err = tx.QueryRow(stmt, id).Scan(&s.ID, &s.FullName, &s.Username, &s.Created, &s.ActiveUser, &s.ClockedIn,
 		&s.CreatedBy.ID, &s.CreatedBy.FullName,
 		&s.Position.ID, &s.Position.Title,
 		&s.Manager.ID, &s.Manager.FullName)
@@ -184,4 +184,24 @@ func (m *UserModel) GetActiveUsers() ([]*models.SysUser, error) {
 	}
 
 	return users, nil
+}
+
+func (m *UserModel) ClockUser(direction string, userID int) error {
+	stmt := `UPDATE sys_user SET is_clocked_in = ? WHERE id = ? AND is_active`
+
+	isClockedIn := 0
+	if direction == "in" {
+		isClockedIn = 1
+	}
+
+	result, err := m.DB.Exec(stmt, isClockedIn, userID)
+	if rows, err := result.RowsAffected(); rows == 0 {
+		if err != nil {
+			return models.ErrNoRecord
+		}
+	}
+	if err != nil {
+		return nil
+	}
+	return err
 }
