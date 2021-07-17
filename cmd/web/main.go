@@ -40,6 +40,7 @@ func main() {
 	// will be used to encrypt and authenticate session cookies). It should be 32
 	// bytes long.
 	secret := flag.String("secret", "s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge", "Secret key")
+
 	// Parse flags
 	flag.Parse()
 
