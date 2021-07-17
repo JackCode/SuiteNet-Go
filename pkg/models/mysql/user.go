@@ -75,7 +75,7 @@ func (m *UserModel) Get(id int) (*models.SysUser, error) {
 			INNER JOIN sys_user AS created_by ON curr_user.sys_user_id = created_by.id
 			INNER JOIN position ON curr_user.position_id = position.id
 			INNER JOIN sys_user AS managed_by ON curr_user.manager_id = managed_by.id
-			WHERE curr_user.id = ?`
+			WHERE curr_user.id = ? AND curr_user.is_active`
 
 	rolesStmt := `SELECT C.id, C.title
 				  FROM user_has_role AS A
@@ -158,7 +158,7 @@ func (m *UserModel) UpdatePassword(username, password string) error {
 }
 
 func (m *UserModel) GetActiveUsers() ([]*models.SysUser, error) {
-	stmt := `SELECT id, full_name, created FROM sys_user WHERE is_active = TRUE`
+	stmt := `SELECT id, full_name, created FROM sys_user WHERE is_active`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {

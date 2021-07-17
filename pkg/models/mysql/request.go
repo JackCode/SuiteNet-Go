@@ -77,7 +77,7 @@ func (m *RequestModel) Get(id int, department string) (*models.Request, error) {
 	readStmt := `SELECT su.id, su.full_name 
 				 FROM request_read
 				 INNER JOIN sys_user AS su ON request_read.sys_user_id = su.id
-				 WHERE request_read.request_id = ? AND su.is_active`
+				 WHERE request_read.request_id = ?`
 
 	tx, err := m.DB.Begin()
 	if err != nil {

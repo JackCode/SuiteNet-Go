@@ -28,6 +28,17 @@
         </select>
     </div>
     <div>
+        <label>Assign to:</label>
+        {{with .Form.Errors.Get "assigned_to"}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <select name="assigned_to">
+            {{range .Users}}
+            <option value="{{.ID}}">{{.FullName}}</option>
+            {{end}}
+        </select>
+    </div>
+    <div>
         <label>Note:</label>
         {{with .Form.Errors.Get "note"}}
             <label class='error'>{{.}}</label>
