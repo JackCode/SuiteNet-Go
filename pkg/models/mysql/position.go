@@ -11,7 +11,7 @@ type PositionModel struct {
 }
 
 func (m *PositionModel) GetActivePositions() ([]*models.Position, error) {
-	stmt := `SELECT id, title, created FROM position WHERE is_active = TRUE`
+	stmt := `SELECT id, title, created FROM position WHERE is_active = TRUE AND title != "System Administrator"`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {

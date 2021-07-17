@@ -189,7 +189,7 @@ func (m *UserModel) ChangePassword(userID int, oldPassword, newPassword string) 
 }
 
 func (m *UserModel) GetActiveUsers() ([]*models.SysUser, error) {
-	stmt := `SELECT id, full_name, created FROM sys_user WHERE is_active`
+	stmt := `SELECT id, full_name, created FROM sys_user WHERE is_active AND username != "sysadmin"`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
