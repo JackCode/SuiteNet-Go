@@ -32,6 +32,7 @@
                         {{else}}
                             onClick="alert('You are on shift.\n\nYou will receive text notifications for new requests assigned to you.')"
                         {{end}}>Clock {{$direction}}</a>
+                    <a href="/user/changePassword">Change Password</a>
                     <form action='/user/logout' method='POST'>
                         <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
                         <button>Logout ({{.AuthenticatedUser.FullName}})</button>

@@ -315,22 +315,22 @@ func (app *application) changePassword(w http.ResponseWriter, r *http.Request) {
 
 	// Validate the form contents using the form helper we made earlier.
 	form := forms.New(r.PostForm)
-	form.Required("username", "password")
-	form.MinLength("password", 8)
-	form.MinLength("username", 4)
+	form.Required("current_password", "new_password", "confirm_password")
+	form.MinLength("new_password", 8)
+	form.ConfirmPasswordMatches("new_password", "confirm_password")
 
-	// If there are any errors, redisplay the reset password form.
+	// If there are any errors, redisplay the change password form.
 	if !form.Valid() {
-		app.render(w, r, "resetpassword.page.tmpl", &templateData{Form: form})
+		app.render(w, r, "change_password.page.tmpl", &templateData{Form: form})
 		return
 	}
 
 	// Try to create a new user record in the database. If the username already exists
 	// add an error message to the form and re-display it.
-	err = app.sys_users.UpdatePassword(form.Get("username"), form.Get("password"))
+	err = app.sys_users.ChangePassword(app.session.GetInt(r, "userID"), form.Get("current_password"), form.Get("new_password"))
 	if err == models.ErrInvalidCredentials {
-		form.Errors.Add("generic", "Error updating password. Please check username.")
-		app.render(w, r, "resetpassword.page.tmpl", &templateData{Form: form})
+		form.Errors.Add("current_password", "Password incorrect. Please try again.")
+		app.render(w, r, "change_password.page.tmpl", &templateData{Form: form})
 		return
 	} else if err != nil {
 		app.serverError(w, err)
@@ -348,5 +348,5 @@ func (app *application) changePassword(w http.ResponseWriter, r *http.Request) {
 func (app *application) clockUser(w http.ResponseWriter, r *http.Request) {
 	direction := r.URL.Query().Get(":direction")
 	app.sys_users.ClockUser(strings.ToLower(direction), app.session.GetInt(r, "userID"))
-	http.Redirect(w, r, "/", 303)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

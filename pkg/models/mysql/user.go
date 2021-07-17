@@ -134,27 +134,58 @@ func (m *UserModel) Get(id int) (*models.SysUser, error) {
 	return s, nil
 }
 
-func (m *UserModel) UpdatePassword(username, password string) error {
-	// Create a bcrypt hash of the plain-text password.
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+func (m *UserModel) ChangePassword(userID int, oldPassword, newPassword string) error {
+	var hashedPassword []byte
+	tx, err := m.DB.Begin()
 	if err != nil {
+		return err
+	}
+
+	row := tx.QueryRow("SELECT hashed_password FROM sys_user WHERE id = ?", userID)
+	err = row.Scan(&hashedPassword)
+	if err == sql.ErrNoRows {
+		tx.Rollback()
+		return models.ErrInvalidCredentials
+	} else if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Check whether the hashed password and plain-text password provided match.
+	// If they don't, we return the ErrInvalidCredentials error.
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(oldPassword))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		tx.Rollback()
+		return models.ErrInvalidCredentials
+	} else if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Create a bcrypt hash of the new plain-text password.
+	hashedNewPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	stmt := `UPDATE sys_user
 			 SET hashed_password = ?
-			 WHERE username = ?`
+			 WHERE id = ?`
 
-	result, err := m.DB.Exec(stmt, hashedPassword, username)
-	if rows, err := result.RowsAffected(); rows == 0 {
-		if err != nil {
-			return models.ErrInvalidCredentials
-		}
+	result, err := m.DB.Exec(stmt, hashedNewPassword, userID)
+	if rows, err := result.RowsAffected(); rows == 0 || err != nil {
+		tx.Rollback()
+		return models.ErrInvalidCredentials
 	}
+
 	if err != nil {
-		return nil
+		tx.Rollback()
+		return err
 	}
-	return err
+
+	tx.Commit()
+	return nil
 }
 
 func (m *UserModel) GetActiveUsers() ([]*models.SysUser, error) {
